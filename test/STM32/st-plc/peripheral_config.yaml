@@ -1,0 +1,205 @@
+callables:  # Functions that can be called by the intercepts
+  HAL_GPIO_EXTI_Callback: null
+  HAL_TIM_PeriodElapsedCallback: null
+
+intercepts:
+# -------  Fix ups-------------------------------------------------------------
+# Things I intercepted by looking at the code trying to get the core
+# functionality to work
+
+# BSP_IO_WritePin(RSTI_PIN, BSP_IO_PIN_RESET);
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [r0, r1], ret_val: null}
+  function: BSP_IO_WritePin
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [], ret_val: 1}
+  function: BSP_SD_IsDetected
+# End Fixups----------------------------------------------------------  
+
+
+# ------------------------GPIO ----------------------------
+- class: halucinator.bp_handlers.stm32f4.stm32f4_gpio.STM32F4GPIO
+  function: HAL_GPIO_WritePin
+- class: halucinator.bp_handlers.stm32f4.stm32f4_gpio.STM32F4GPIO
+  function: HAL_GPIO_ReadPin
+- class: halucinator.bp_handlers.stm32f4.stm32f4_gpio.STM32F4GPIO
+  function: HAL_GPIO_TogglePin
+- class: halucinator.bp_handlers.stm32f4.stm32f4_gpio.STM32F4GPIO
+  function: HAL_GPIO_EXTI_IRQHandler
+- class: halucinator.bp_handlers.stm32f4.stm32f4_gpio.STM32F4GPIO
+  function: HAL_GPIO_Init
+- class: halucinator.bp_handlers.stm32f4.stm32f4_gpio.STM32F4GPIO
+  function: HAL_GPIO_DeInit
+
+
+# -------------------------SD Card ------------------------------------
+# HAL_StatusTypeDef HAL_SD_Init(SD_HandleTypeDef *hsd)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_Init
+# HAL_StatusTypeDef HAL_SD_InitCard(SD_HandleTypeDef *hsd)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_InitCard
+# HAL_StatusTypeDef HAL_SD_DeInit(SD_HandleTypeDef
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_DeInit
+# HAL_StatusTypeDef HAL_SD_ReadBlocks(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks, uint32_t Timeout)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_ReadBlocks
+# HAL_StatusTypeDef HAL_SD_WriteBlocks(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks, uint32_t Timeout)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_WriteBlocks
+# HAL_StatusTypeDef HAL_SD_ReadBlocks_IT(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_ReadBlocks_IT
+# HAL_StatusTypeDef HAL_SD_WriteBlocks_IT(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_WriteBlocks_IT
+# HAL_StatusTypeDef HAL_SD_ReadBlocks_DMA(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_ReadBlocks_DMA
+# HAL_StatusTypeDef HAL_SD_WriteBlocks_DMA(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_WriteBlocks_DMA
+# HAL_StatusTypeDef HAL_SD_Erase(SD_HandleTypeDef *hsd, uint32_t BlockStartAdd, uint32_t BlockEndAdd)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_Erase
+# HAL_StatusTypeDef HAL_SD_GetCardCID(SD_HandleTypeDef *hsd, HAL_SD_CardCIDTypeDef *pCID)
+#- addr: None
+#  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+#  function: HAL_SD_GetCardCID
+# HAL_StatusTypeDef HAL_SD_GetCardCSD(SD_HandleTypeDef *hsd, HAL_SD_CardCSDTypeDef *pCSD)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_GetCardCSD
+# HAL_StatusTypeDef HAL_SD_GetCardStatus(SD_HandleTypeDef *hsd, HAL_SD_CardStatusTypeDef *pStatus)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_GetCardStatus
+# HAL_StatusTypeDef HAL_SD_GetCardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTypeDef *pCardInfo)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_GetCardInfo
+# HAL_StatusTypeDef HAL_SD_ConfigWideBusOperation(SD_HandleTypeDef *hsd, uint32_t WideMode)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_ConfigWideBusOperation
+# HAL_SD_CardStateTypeDef HAL_SD_GetCardState(SD_HandleTypeDef *hsd)
+- addr: None
+  class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_GetCardState
+
+## --------------------------ETHERNET ----------------------------------------
+- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
+  function: HAL_ETH_GetReceivedFrame
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_ETH_Init
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_ETH_MspInit
+- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
+  function: HAL_ETH_ReadPHYRegister
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0} 
+  function: HAL_ETH_Start
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0} 
+  function: HAL_ETH_Stop
+- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
+  function: HAL_ETH_TransmitFrame
+- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
+  function: HAL_ETH_WritePHYRegister
+
+
+# -------------------------------UART ----------------------------------------
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART 
+  function: HAL_UART_Init
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART 
+  function: HAL_UART_GetState
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Transmit
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Transmit_IT
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Transmit_DMA
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Receive
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Receive_IT
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Receive_DMA
+# ----------------------------------------------------------------------------
+
+# ------------------------------- TIM ------------------------------------
+- class: halucinator.bp_handlers.stm32f4.stm32f4_tim.STM32_TIM
+  function: HAL_Delay
+- class: halucinator.bp_handlers.stm32f4.stm32f4_tim.STM32_TIM
+  function: HAL_TIM_Base_Init
+- class: halucinator.bp_handlers.stm32f4.stm32f4_tim.STM32_TIM
+  function: HAL_TIM_Base_Start_IT
+- class: halucinator.bp_handlers.stm32f4.stm32f4_tim.STM32_TIM
+  function: HAL_TIM_DeInit
+- class: halucinator.bp_handlers.stm32f4.stm32f4_tim.STM32_TIM
+  function: HAL_TIM_Base_Stop_IT
+- class: halucinator.bp_handlers.stm32f4.stm32f4_tim.STM32_TIM
+  function: HAL_TIM_ConfigClockSource
+- class: halucinator.bp_handlers.stm32f4.stm32f4_tim.STM32_TIM
+  function: HAL_TIM_IRQHandler
+- class: halucinator.bp_handlers.stm32f4.stm32f4_tim.STM32_TIM
+  function: HAL_TIMEx_MasterConfigSynchronization
+- class: halucinator.bp_handlers.stm32f4.stm32f4_tim.STM32_TIM
+  function: HAL_TIM_ConfigClockSource
+
+
+# ------------------------------- Wifi ------------------------------------
+- class: halucinator.bp_handlers.stm32f4.stm32f4_wifi.STM32F4Wifi
+  function: wifi_init
+- class: halucinator.bp_handlers.stm32f4.stm32f4_wifi.STM32F4Wifi
+  function: wifi_wakeup
+- class: halucinator.bp_handlers.stm32f4.stm32f4_wifi.STM32F4Wifi
+  function: Wifi_SysTick_Isr
+- class: halucinator.bp_handlers.stm32f4.stm32f4_wifi.STM32F4Wifi
+  function: Wifi_TIM_Handler
+- class: halucinator.bp_handlers.stm32f4.stm32f4_wifi.STM32F4Wifi
+  function: wifi_socket_server_open
+- class: halucinator.bp_handlers.stm32f4.stm32f4_wifi.STM32F4Wifi
+  function: wifi_socket_server_write
+
+
+# ------------------------------- Base ------------------------------------
+- class: halucinator.bp_handlers.stm32f4.stm32f4_spi.STM32F4SPI
+  function: HAL_SPI_Init
+
+# ------------------------------- Base ------------------------------------
+
+- class: halucinator.bp_handlers.stm32f4.stm32f4_base.STM32F4_Base
+  function: HAL_Init
+- class: halucinator.bp_handlers.stm32f4.stm32f4_base.STM32F4_Base
+  function: HAL_InitTick
+- class: halucinator.bp_handlers.stm32f4.stm32f4_base.STM32F4_Base
+  function: HAL_RCC_OscConfig
+- class: halucinator.bp_handlers.stm32f4.stm32f4_base.STM32F4_Base
+  function: SystemClock_Config
+- class: halucinator.bp_handlers.stm32f4.stm32f4_base.STM32F4_Base
+  function: HAL_RCC_ClockConfig
+- class: halucinator.bp_handlers.stm32f4.stm32f4_base.STM32F4_Base
+  function: HAL_SYSTICK_Config
+- class: halucinator.bp_handlers.stm32f4.stm32f4_base.STM32F4_Base
+  function: HAL_SYSTICK_CLKSourceConfig
+- class: halucinator.bp_handlers.stm32f4.stm32f4_base.STM32F4_Base
+  function: SystemInit
+
+
+
+- class: halucinator.bp_handlers.stm32f4.stm32f4_base.STM32F4_Base
+  function: Error_Handler

@@ -1,0 +1,153 @@
+callables:  # Functions that can be called by the intercepts
+  pbuf_free: null
+  ksz8851snl_rx_populate_queue:
+  
+intercepts:
+
+# --------------------------Remove unneed MMIO -------------------------------
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: rtc_calendar_init
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: rtc_calendar_enable
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: rtc_calendar_disable
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: rtc_calendar_reset
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: rtc_calendar_set_alarm
+  
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: 0}
+  function: spi_init
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: board_init
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: sd_mmc_spi_init
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: _system_pinmux_config
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: tc_init
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: _system_extini_init
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: delay_init
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: system_gclk_chan_disable
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: system_gclk_chan_set_config
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: system_gclk_chan_enable
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: _system_extint_init
+
+# ----------------------------------------------------------------------------
+
+# --------------------------Debug --------------------------------------------
+- class: halucinator.bp_handlers.generic.debug.IPythonShell
+  function: HardFault_Handler
+- class: halucinator.bp_handlers.generic.debug.IPythonShell
+  function: Dummy_Handler
+- class: halucinator.bp_handlers.generic.debug.IPythonShell
+  function: SYSCTRL_Handler
+# - class: halucinator.bp_handlers.generic.debug.IPythonShell
+#   function: EIC_Handler
+
+# - class: halucinator.bp_handlers.generic.debug.IPythonShell
+#   addr: 0x7b4c
+#   function: "Need to Debug"
+
+# -----------------------    Startup ------------------------------------------
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: system_clock_init
+
+
+# -----------------------------------------------------------------------------
+# ----------------------- EXT Interrupt----------------------------------------
+# - class: halucinator.bp_handlers.atmel_asf_v3.ext_interrupt.EXT_Int
+#   registration_args: { channel_map: {6: Ethernet_RX_Frame }}
+#   function: EIC_Handler
+- class: halucinator.bp_handlers.atmel_asf_v3.ext_interrupt.EXT_Int
+  registration_args: { channel_map: {6: Ethernet_RX_Frame }}
+  function: extint_register_callback
+
+# -----------------------------------------------------------------------------
+# ----------------------- USART -----------------------------------------------
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_init
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_enable
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_write_buffer_wait
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_read_wait
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_write_wait
+# ----------------------------------------------------------------------------
+# --------------------------ETHERNET -----------------------------------------
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851_reg_read
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851_reg_write
+# # - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+# #   function: ksz8851_fifo_clrbits
+# # - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+# #   function: ksz8851_fifo_setbit
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851_fifo_write_begin
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851_fifo_write
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851_fifo_write_end
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851_fifo_read
+# # - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+# #   function: ksz8851snl_init
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851snl_hard_reset
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851snl_interface_init
+
+- class: halucinator.bp_handlers.atmel_asf_v3.hle_ethernet.Ksz8851HLE
+  function: 'ethernetif_input'
+- class: halucinator.bp_handlers.atmel_asf_v3.hle_ethernet.Ksz8851HLE
+  function: 'ksz8851snl_low_level_output'
+- class: halucinator.bp_handlers.atmel_asf_v3.hle_ethernet.Ksz8851HLE
+  function: 'ksz8851snl_init'
+
+# - class:  halucinator.bp_handlers.generic.timer.Timer
+- class: halucinator.bp_handlers.atmel_asf_v3.hle_ethernet.Ksz8851HLE
+  function: sys_get_ms
+
+# ----------------------------------------------------------------------------
+ 

@@ -1,0 +1,45 @@
+options:
+  remove_bitband: True
+memories:
+  flash: {base_addr: 0x0, file: Release_EXAMPLES_UDP-UNICAST-RECEIVER.bin, permissions: r-x, size: 0x80000} #512K
+  NVM: {base_addr: 0x0080A000, permissions: r-x, size: 0x80000} #512K
+  ram: {base_addr: 0x20000000, size: 0x10000} #64K
+peripherals:
+  # logger: {base_addr: 0x40000000, emulate: HaltPeripheral, permissions: rw-, size: 0x10000000} #Need gap for EIC
+  # logger: {base_addr: 0x40000000, emulate: HaltPeripheral, permissions: rw-, size: 0x1800} #Need gap for EIC
+  # logger2: {base_addr: 0x40002000, emulate: HaltPeripheral, permissions: rw-, size: 0x02000000} # Need gap for Timers as 0x42002000
+  # logger3: {base_addr: 0x42003000, emulate: HaltPeripheral, permissions: rw-, size: 0x2800} #Should cover end of peripherals
+    PAC0: {base_addr: 0x40000000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    PM:   {base_addr: 0x40000400, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    SYSCTRL: {base_addr: 0x40000800, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    GCLK:    {base_addr: 0x40000C00, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    WDT:     {base_addr: 0x40001000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    RTC:     {base_addr: 0x40001400, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    EIC:     {base_addr: 0x40001800, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    PAC1:    {base_addr: 0x41000000, emulate: HaltPeripheral, permissions: rw-, size: 0x2000}
+    DSU:     {base_addr: 0x41002000, emulate: HaltPeripheral, permissions: rw-, size: 0x2000}
+    NVMCTRL: {base_addr: 0x41004000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    PORT:    {base_addr: 0x41004400, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    DMAC:    {base_addr: 0x41004800, emulate: HaltPeripheral, permissions: rw-, size: 0x800}
+    USB:     {base_addr: 0x41005000, emulate: HaltPeripheral, permissions: rw-, size: 0x1000}
+    MTB:     {base_addr: 0x41006000, emulate: HaltPeripheral, permissions: rw-, size: 0x1000}
+    SBMatrix: {base_addr: 0x41007000, emulate: HaltPeripheral, permissions: rw-, size: 0x1000}
+    PAC2:    {base_addr: 0x42000000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    PAC2:    {base_addr: 0x42000000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    EVSYS:   {base_addr: 0x42000400, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    SERCOM0: {base_addr: 0x42000800, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    SERCOM1: {base_addr: 0x42000C00, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    SERCOM2: {base_addr: 0x42001000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    SERCOM3: {base_addr: 0x42001400, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    SERCOM4: {base_addr: 0x42001800, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    SERCOM5: {base_addr: 0x42001C00, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    TCC0:    {base_addr: 0x42002000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    TCC1:    {base_addr: 0x42002400, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    TCC2:    {base_addr: 0x42002800, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    TC3:     {base_addr: 0x42002C00, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    TC4:     {base_addr: 0x42003000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    TC5:     {base_addr: 0x42003400, emulate: HaltPeripheral, permissions: rw-, size: 0xC00}
+    ADC:     {base_addr: 0x42004000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    AC:      {base_addr: 0x42004400, emulate: HaltPeripheral, permissions: rw-, size: 0x800}
+    PTC:     {base_addr: 0x42004C00, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
+    RFCTRL:  {base_addr: 0x42005400, emulate: HaltPeripheral, permissions: rw-, size: 0x800}

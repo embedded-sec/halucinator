@@ -1,0 +1,211 @@
+callables:  # Functions that can be called by the intercepts
+  HAL_GPIO_EXTI_Callback: null
+
+intercepts:
+# ------- Fix ups-------------------------------------------------------------
+# Things I intercepted by looking at the code trying to get the core
+# functionality to work
+
+# BSP_IO_WritePin(RSTI_PIN, BSP_IO_PIN_RESET);
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [r0, r1], ret_val: null}
+  function: BSP_IO_WritePin
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [], ret_val: 1}
+  function: BSP_SD_IsDetected
+# End Fixups---------------------------------------------------------- 
+
+
+# ------------------------GPIO ----------------------------
+- class: halucinator.bp_handlers.stm32f4.stm32f4_gpio.STM32F4GPIO
+  function: HAL_GPIO_WritePin
+- class: halucinator.bp_handlers.stm32f4.stm32f4_gpio.STM32F4GPIO
+  function: HAL_GPIO_ReadPin
+- class: halucinator.bp_handlers.stm32f4.stm32f4_gpio.STM32F4GPIO
+  function: HAL_GPIO_TogglePin
+- class: halucinator.bp_handlers.stm32f4.stm32f4_gpio.STM32F4GPIO
+  function: HAL_GPIO_EXTI_IRQHandler
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0, r1], ret_val: 0} 
+  function: HAL_GPIO_Init
+
+
+# -------------------------SD Card ------------------------------------
+# HAL_StatusTypeDef HAL_SD_Init(SD_HandleTypeDef *hsd)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_Init
+# HAL_StatusTypeDef HAL_SD_InitCard(SD_HandleTypeDef *hsd)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_InitCard
+# HAL_StatusTypeDef HAL_SD_DeInit(SD_HandleTypeDef
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_DeInit
+# HAL_StatusTypeDef HAL_SD_ReadBlocks(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks, uint32_t Timeout)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_ReadBlocks
+# HAL_StatusTypeDef HAL_SD_WriteBlocks(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks, uint32_t Timeout)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_WriteBlocks
+# HAL_StatusTypeDef HAL_SD_ReadBlocks_IT(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_ReadBlocks_IT
+# HAL_StatusTypeDef HAL_SD_WriteBlocks_IT(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_WriteBlocks_IT
+# HAL_StatusTypeDef HAL_SD_ReadBlocks_DMA(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_ReadBlocks_DMA
+# HAL_StatusTypeDef HAL_SD_WriteBlocks_DMA(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_WriteBlocks_DMA
+# HAL_StatusTypeDef HAL_SD_Erase(SD_HandleTypeDef *hsd, uint32_t BlockStartAdd, uint32_t BlockEndAdd)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_Erase
+# HAL_StatusTypeDef HAL_SD_GetCardCID(SD_HandleTypeDef *hsd, HAL_SD_CardCIDTypeDef *pCID)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_GetCardCID
+# HAL_StatusTypeDef HAL_SD_GetCardCSD(SD_HandleTypeDef *hsd, HAL_SD_CardCSDTypeDef *pCSD)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_GetCardCSD
+# HAL_StatusTypeDef HAL_SD_GetCardStatus(SD_HandleTypeDef *hsd, HAL_SD_CardStatusTypeDef *pStatus)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_GetCardStatus
+# HAL_StatusTypeDef HAL_SD_GetCardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTypeDef *pCardInfo)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_GetCardInfo
+# HAL_StatusTypeDef HAL_SD_ConfigWideBusOperation(SD_HandleTypeDef *hsd, uint32_t WideMode)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_ConfigWideBusOperation
+# HAL_SD_CardStateTypeDef HAL_SD_GetCardState(SD_HandleTypeDef *hsd)
+- class: halucinator.bp_handlers.stm32f4.stm32f4_sd.SD_Card
+  function: HAL_SD_GetCardState
+
+## --------------------------ETHERNET ----------------------------------------
+- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
+  function: HAL_ETH_GetReceivedFrame
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_ETH_Init
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_ETH_MspInit
+- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
+  function: HAL_ETH_ReadPHYRegister
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0} 
+  function: HAL_ETH_Start
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0} 
+  function: HAL_ETH_Stop
+- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
+  function: HAL_ETH_TransmitFrame
+- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
+  function: HAL_ETH_WritePHYRegister
+
+
+# -------------------------------UART ----------------------------------------
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART 
+  function: HAL_UART_Init
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART 
+  function: HAL_UART_GetState
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Transmit
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Transmit_IT
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Transmit_DMA
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Receive
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Receive_IT
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
+  function: HAL_UART_Receive_DMA
+# ----------------------------------------------------------------------------
+
+# -------------------------------Generic ------------------------------------
+
+- addr: 0x800208c
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [r0], ret_val: null}
+  function: HAL_Delay
+- addr: 0x8002080
+  class: halucinator.bp_handlers.generic.timer.Timer
+  function: HAL_GetTick
+- addr: 0x8002034
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_Init
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_InitTick
+- addr: 0x8002068
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  function: HAL_IncTick
+- addr: 0x8001fec
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_MspInit
+- addr: 0x8003072
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0} 
+  function: HAL_I2C_DeInit
+- addr: 0x8002f94
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0} 
+  function: HAL_I2C_Init
+- addr: 0x80033f0
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0} 
+  function: HAL_I2C_GetState
+- addr: 0x80031d0
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0, r1, r2, r3, s0#4, s4#4, s8#4], ret_val: 0} 
+  function: HAL_I2C_Mem_Read
+- addr: 0x80030a4
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0, r1, r2, r3, s0#4, s4#4, s8#4], ret_val: 0} 
+  function: HAL_I2C_Mem_Write
+- addr: 0x8003070
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0} 
+  function: HAL_I2C_MspDeInit
+- addr: 0x8002f92
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: null} 
+  function: HAL_I2C_MspInit
+- addr: 0x80034cc
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0} 
+  function: HAL_RCC_ClockConfig
+- addr: 0x8003600
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_RCC_GetHCLKFreq
+- addr: 0x800360c
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_RCC_GetPCLK1Freq
+- addr: 0x8003470
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_RCC_GetSysClockFreq
+- addr: 0x800362c
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_RCC_OscConfig
+- addr: 0x8002158
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0], ret_val: 0}
+  function: HAL_SYSTICK_Config
+- addr: 0x80033f8
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {ret_val: 0}
+  function: HAL_PWREx_EnableOverDrive
+- addr: 0x80033f8
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {ret_val: 0}
+  function: BSP_IO_Init
+- addr: 0x08001db0
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
+  registration_args: {params: [r0, r1], ret_val: 0}
+  function: BSP_IO_ConfigPin

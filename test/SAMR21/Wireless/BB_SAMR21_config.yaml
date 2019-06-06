@@ -1,0 +1,116 @@
+
+intercepts:
+
+# --------------------------Debug --------------------------------------------
+- class: halucinator.bp_handlers.generic.debug.IPythonShell
+  function: HardFault_Handler
+- class: halucinator.bp_handlers.generic.debug.IPythonShell
+  function: Dummy_Handler
+- class: halucinator.bp_handlers.generic.debug.IPythonShell
+  function: SYSCTRL_Handler
+# - class: halucinator.bp_handlers.generic.debug.IPythonShell
+#   function: EIC_Handler
+# - class: halucinator.bp_handlers.generic.debug.IPythonShell
+#   function: DebugMe_0x40000420
+#   addr: 0x248a
+
+
+# -----------------------    Startup ------------------------------------------
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: system_clock_init
+
+- class: halucinator.bp_handlers.generic.timer.Timer
+  registration_args: { scale: 1 }
+  function: sys_get_ms
+# -----------------------------------------------------------------------------
+# ----------------------- EXT Interrupt----------------------------------------
+# - class: halucinator.bp_handlers.atmel_asf_v3.ext_interrupt.EXT_Int
+#   registration_args: { channel_map: {6: Ethernet_RX_Frame }}
+#   function: EIC_Handler
+# - class: halucinator.bp_handlers.atmel_asf_v3.ext_interrupt.EXT_Int
+#   registration_args: { channel_map: {6: Ethernet_RX_Frame }}
+#   function: extint_register_callback
+# -----------------------------------------------------------------------------
+# ----------------------- USART -----------------------------------------------
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_init
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_enable
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_write_buffer_wait
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_read_wait
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_write_wait
+# ----------------------------------------------------------------------------
+# --------------------------ETHERNET -----------------------------------------
+- class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+  function: ksz8851_reg_read
+- class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+  function: ksz8851_reg_write
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851_fifo_clrbits
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851_fifo_setbit
+- class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+  function: ksz8851_fifo_write_begin
+- class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+  function: ksz8851_fifo_write
+- class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+  function: ksz8851_fifo_write_end
+- class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+  function: ksz8851_fifo_read
+# - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+#   function: ksz8851snl_init
+- class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+  function: ksz8851snl_hard_reset
+- class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
+  function: ksz8851snl_interface_init
+
+# ----------------------------------------------------------------------------
+# ------------------------------Radio ------------------------------------
+- class: halucinator.bp_handlers.atmel_asf_v3.radio.SAMR21Radio
+  function: trx_reg_read
+- class: halucinator.bp_handlers.atmel_asf_v3.radio.SAMR21Radio
+  function: trx_reg_write
+- class: halucinator.bp_handlers.atmel_asf_v3.radio.SAMR21Radio
+  function: trx_bit_read
+- class: halucinator.bp_handlers.atmel_asf_v3.radio.SAMR21Radio
+  function: trx_bit_write
+- class: halucinator.bp_handlers.atmel_asf_v3.radio.SAMR21Radio
+  function: trx_frame_read
+- class: halucinator.bp_handlers.atmel_asf_v3.radio.SAMR21Radio
+  function: trx_frame_write
+- class: halucinator.bp_handlers.atmel_asf_v3.radio.SAMR21Radio
+  function: trx_sram_read
+- class: halucinator.bp_handlers.atmel_asf_v3.radio.SAMR21Radio
+  function: trx_sram_write
+- class: halucinator.bp_handlers.atmel_asf_v3.radio.SAMR21Radio
+  function: trx_aes_wrrd
+- class: halucinator.bp_handlers.atmel_asf_v3.radio.SAMR21Radio
+  function: PhyReset
+#-------------------------------------------------------------------------
+
+#---------------------EDBG --------------------------------------------
+- class: halucinator.bp_handlers.atmel_asf_v3.edbg_stub.EDBG_Stub
+  registration_args: {eui64: "ATML212703180001543216789034115970415087614"}
+  function: i2c_master_init
+- class: halucinator.bp_handlers.atmel_asf_v3.edbg_stub.EDBG_Stub
+  function: i2c_master_enable
+- class: halucinator.bp_handlers.atmel_asf_v3.edbg_stub.EDBG_Stub
+  function: i2c_master_write_packet_wait_no_stop
+- class: halucinator.bp_handlers.atmel_asf_v3.edbg_stub.EDBG_Stub
+  function: i2c_master_read_packet_wait
+
+#---------------------TIMER --------------------------------------------
+- class: halucinator.bp_handlers.atmel_asf_v3.timers.Timers
+  registration_args: { irq_rates: {Timer3: 1}}
+  function: tc_init
+# - class: halucinator.bp_handlers.atmel_asf_v3.timers.Timers
+#   registration_args: { irq_rates: {Timer3: 20}}
+#   function: _tc_interrupt_handler
+# - class: halucinator.bp_handlers.generic.debug.IPythonShell
+#   function: Debug_Me
+#   addr: 0x248a

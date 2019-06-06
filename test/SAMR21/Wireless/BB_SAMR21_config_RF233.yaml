@@ -1,0 +1,144 @@
+callables:
+  rf233_interrupt_poll: null
+  AT86RFX_ISR: null
+  extint_register_callback: null
+  
+intercepts:
+
+# --------------------------Debug --------------------------------------------
+- class: halucinator.bp_handlers.generic.debug.IPythonShell
+  function: HardFault_Handler
+- class: halucinator.bp_handlers.generic.debug.IPythonShell
+  function: Dummy_Handler
+- class: halucinator.bp_handlers.generic.debug.IPythonShell
+  function: SYSCTRL_Handler
+# - class: halucinator.bp_handlers.generic.debug.IPythonShell
+#   function: EIC_Handler
+# - class: halucinator.bp_handlers.generic.debug.IPythonShell
+#   function: DebugMe_0x40000420
+#   addr: 0x248a
+
+
+# -----------------------    Startup ------------------------------------------
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  registration_args: {ret_val: null}
+  function: system_clock_init
+
+- class: halucinator.bp_handlers.generic.timer.Timer
+  registration_args: { scale: 0.5 }
+  function: sys_get_ms
+# -----------------------------------------------------------------------------
+# ----------------------- EXT Interrupt----------------------------------------
+# - class: halucinator.bp_handlers.atmel_asf_v3.ext_interrupt.EXT_Int
+#   registration_args: { channel_map: {6: Ethernet_RX_Frame }}
+#   function: EIC_Handler
+- class: halucinator.bp_handlers.atmel_asf_v3.ext_interrupt.EXT_Int
+  registration_args: { channel_map: {0: 802_15_4_RX_Frame }}
+  function: extint_register_callback
+# -----------------------------------------------------------------------------
+# ----------------------- USART -----------------------------------------------
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_init
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_enable
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_write_buffer_wait
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_read_wait
+- class: halucinator.bp_handlers.atmel_asf_v3.usart.USART
+  function: usart_write_wait
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+
+# ------------------------------Radio ------------------------------------
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_init
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_prepare
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_transmit
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: rf233_send
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: trx_frame_write
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_read
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: 'trx_sram_read'
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: 'trx_frame_read'
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_channel_clear
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_receiving_packet
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_pending_packet
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: rf233_on
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_off
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_sleep
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_interrupt_poll
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: rf_get_channel
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: rf_set_channel
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_get_txp
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_set_txp
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf233_status
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: SetIEEEAddr
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: SetPanId
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: SetShortAddr
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: trx_reg_read
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: trx_reg_write
+- class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+  function: trx_spi_init
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: rf_generate_random_seed
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: EIC_Handler
+# - class: halucinator.bp_handlers.atmel_asf_v3.rf233.RF233Radio
+#   function: _system_extint_init
+#-------------------------------------------------------------------------
+
+#---------------------EDBG --------------------------------------------
+- class: halucinator.bp_handlers.atmel_asf_v3.edbg_stub.EDBG_Stub
+  registration_args: {eui64: "ATML212703180001543216789034115970415087614"}
+  function: i2c_master_init
+- class: halucinator.bp_handlers.atmel_asf_v3.edbg_stub.EDBG_Stub
+  function: i2c_master_enable
+- class: halucinator.bp_handlers.atmel_asf_v3.edbg_stub.EDBG_Stub
+  function: i2c_master_write_packet_wait_no_stop
+- class: halucinator.bp_handlers.atmel_asf_v3.edbg_stub.EDBG_Stub
+  function: i2c_master_read_packet_wait
+
+#---------------------TIMER --------------------------------------------
+- class: halucinator.bp_handlers.atmel_asf_v3.timers.Timers
+  registration_args: { irq_rates: {Timer3: 10}}
+  function: tc_init
+# - class: halucinator.bp_handlers.atmel_asf_v3.timers.Timers
+#   registration_args: { irq_rates: {Timer3: 20}}
+#   function: _tc_interrupt_handler
+# - class: halucinator.bp_handlers.generic.debug.IPythonShell
+#   function: Debug_Me
+#   addr: 0x248a
+
+#----------------------------Contiki-------------------------------------
+- class: halucinator.bp_handlers.atmel_asf_v3.contiki.Contiki
+  registration_args: { ticks_per_second: 128}
+  function: clock_time
+- class: halucinator.bp_handlers.atmel_asf_v3.contiki.Contiki
+  registration_args: { ticks_per_second: 128}
+  function: clock_seconds

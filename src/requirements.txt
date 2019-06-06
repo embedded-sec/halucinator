@@ -1,0 +1,6 @@
+PyYAML
+zmq
+IPython
+pyelftools
+scapy
+pycparser
