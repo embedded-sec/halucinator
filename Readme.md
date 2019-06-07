@@ -1,6 +1,6 @@
 # HALucinator - Firmware rehosting through abstraction layer modeling.
 
-## Prerequistes
+## Prerequisites
 
 ```
 apt install python-pip gcc-arm-none-eabi
