@@ -1,0 +1,6 @@
+
+*~
+.*.sw*
+*.bak
+
+src/build/

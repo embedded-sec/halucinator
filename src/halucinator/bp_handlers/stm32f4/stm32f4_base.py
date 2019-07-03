@@ -1,7 +1,7 @@
-# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a 
-# non-exclusive license for use of this work by or on behalf of the U.S. 
-# Government. Export of this data may require a license from the United States 
+# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
 # Government.
 
 from ...peripheral_models.interrupts import Interrupts
@@ -23,6 +23,7 @@ class STM32F4_Base(BPHandler):
     This represents the "base" stuff in the STM32.
     All the things related to boot, reset, clocks, and the SysTick timer.
     """
+
     def __init__(self, model=TimerModel):
         self.model = model
         self.org_lr = None
@@ -58,7 +59,6 @@ class STM32F4_Base(BPHandler):
         log.info("HAL_RCC_ClockConfig called")
         return True, 0
 
-
     @bp_handler(['HAL_SYSTICK_Config'])
     def systick_config(self, qemu, bp_addr):
         #rate = qemu.regs.r0
@@ -78,7 +78,8 @@ class STM32F4_Base(BPHandler):
     def init_tick(self, qemu, bp_addr):
         systick_rate = 10
         systick_irq = 12
-        log.info("Starting SysTick on IRQ %d, rate %d" % (systick_irq, systick_rate))
+        log.info("Starting SysTick on IRQ %d, rate %d" %
+                 (systick_irq, systick_rate))
         #self.model.start_timer("SysTick", systick_irq, systick_rate)
         #import ipdb; ipdb.set_trace()
         return True, 0
@@ -87,6 +88,6 @@ class STM32F4_Base(BPHandler):
     def error_handler(self, qemu, bp_addr):
         self.model.stop_timer("SysTick")
         self.model.stop_timer("0x40000400")
-        import ipdb; ipdb.set_trace()
+        import ipdb
+        ipdb.set_trace()
         return True, 0
-

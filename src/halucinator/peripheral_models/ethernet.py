@@ -1,14 +1,14 @@
-# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a 
-# non-exclusive license for use of this work by or on behalf of the U.S. 
-# Government. Export of this data may require a license from the United States 
+# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
 # Government.
 
 
-import peripheral_server
+from . import peripheral_server
 # from peripheral_server import PeripheralServer, peripheral_model
 from collections import deque, defaultdict
-from interrupts import Interrupts
+from .interrupts import Interrupts
 import binascii
 import struct
 import logging
@@ -16,9 +16,11 @@ import time
 log = logging.getLogger("EthernetModel")
 # log.setLevel(logging.DEBUG)
 
-@peripheral_server.peripheral_model  # Register the pub/sub calls and methods that need mapped
+
+# Register the pub/sub calls and methods that need mapped
+@peripheral_server.peripheral_model
 class EthernetModel(object):
-    
+
     frame_queues = defaultdict(deque)
     calc_crc = True
     rx_frame_isr = None
@@ -42,11 +44,10 @@ class EthernetModel(object):
             Creates the message that Peripheral.tx_msga will send on this 
             event
         '''
-        print "Sending Frame (%i): " % len(frame), binascii.hexlify(frame)  
-        #print ""  
+        print("Sending Frame (%i): " % len(frame), binascii.hexlify(frame))
+        # print ""
         msg = {'interface_id': interface_id, 'frame': frame}
         return msg
-
 
     @classmethod
     @peripheral_server.reg_rx_handler
@@ -64,7 +65,6 @@ class EthernetModel(object):
         if cls.rx_frame_isr is not None and cls.rx_isr_enabled:
             Interrupts.trigger_interrupt(cls.rx_frame_isr, 'Ethernet_RX_Frame')
 
-
     @classmethod
     def get_rx_frame(cls, interface_id, get_time=False):
         frame = None
@@ -73,7 +73,7 @@ class EthernetModel(object):
         if cls.frame_queues[interface_id]:
             log.info("Returning frame")
             frame = cls.frame_queues[interface_id].popleft()
-            rx_time  = cls.frame_times[interface_id].popleft()
+            rx_time = cls.frame_times[interface_id].popleft()
 
         if get_time:
             return frame, rx_time

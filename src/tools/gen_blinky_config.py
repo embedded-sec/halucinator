@@ -1,7 +1,7 @@
-# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a 
-# non-exclusive license for use of this work by or on behalf of the U.S. 
-# Government. Export of this data may require a license from the United States 
+# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
 # Government.
 
 
@@ -27,36 +27,36 @@ def get_memories():
     }
     '''
     memories = {}
-    memories ['flash'] = {'file':'STM32CubeL1_Blinky.bin',
-             'permissions':'r-x',
-             'base_addr': 0x08000000,
-             'size': 0x1000000,
-             'name':'flash'}
+    memories['flash'] = {'file': 'STM32CubeL1_Blinky.bin',
+                         'permissions': 'r-x',
+                         'base_addr': 0x08000000,
+                         'size': 0x1000000,
+                         'name': 'flash'}
 
-    memories['alias'] = {'file':'STM32CubeL1_Blinky.bin',
-            'permissions':'r-x',           
-            'base_addr': 0x00000000,
-            'size': 0x1000000,
-            'name':'alias'}
+    memories['alias'] = {'file': 'STM32CubeL1_Blinky.bin',
+                         'permissions': 'r-x',
+                         'base_addr': 0x00000000,
+                         'size': 0x1000000,
+                         'name': 'alias'}
 
     memories['ram'] = {'base_addr': 0x20000000,
-           'size': 0x14000,
-           'name':'ram'}
+                       'size': 0x14000,
+                       'name': 'ram'}
 
     return memories
 
 
 def get_peripherals():
-    peripherals= {
+    peripherals = {
         'logger': {
-            'permissions':'rw-',
+            'permissions': 'rw-',
             'emulate': 'GenericPeripheral',
             'base_addr': 0x40000000,
             'size': 0x20000000,
-            'name':'peripherals'
-            }
+            'name': 'peripherals'
         }
-    
+    }
+
     return peripherals
 
 
@@ -71,22 +71,22 @@ def get_intercepts():
      }
     '''
     SysInit = {'class': 'VoidIntercept',
-      'addr': 0x80001a8,
-      'function': 'SystemInit',
-      'class_args': None
-    }
+               'addr': 0x80001a8,
+               'function': 'SystemInit',
+               'class_args': None
+               }
 
     SystemClock_Config = {'class': 'VoidIntercept',
-      'addr': 0x80002dc,
-      'function': 'SystemClock_Config',
-      'class_args': None
-    }
+                          'addr': 0x80002dc,
+                          'function': 'SystemClock_Config',
+                          'class_args': None
+                          }
 
     DelayIntercept = {'class': 'DelayIntercept',
-      'addr': 0x800020c,
-      'function': 'LL_mDelay',
-      'class_args': None
-    }
+                      'addr': 0x800020c,
+                      'function': 'LL_mDelay',
+                      'class_args': None
+                      }
 
     return [SysInit, SystemClock_Config, DelayIntercept]
 
@@ -97,8 +97,8 @@ def main(config_file):
               'memories': get_memories(),
               'peripherals': get_peripherals(),
               'intercepts': get_intercepts()}
-  
-    with open(config_file,'wb') as outfile:
+
+    with open(config_file, 'wb') as outfile:
         yaml.dump(config, outfile, indent=4)
 
 

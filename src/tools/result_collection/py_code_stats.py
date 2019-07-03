@@ -1,7 +1,7 @@
-# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a 
-# non-exclusive license for use of this work by or on behalf of the U.S. 
-# Government. Export of this data may require a license from the United States 
+# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
 # Government.
 
 import radon
@@ -22,24 +22,26 @@ cc_config = Config(
     show_closures=False,
     average=True,
     total_average=False,
-    exclude = ['*.pyc'],
-    ignore = [""]
+    exclude=['*.pyc'],
+    ignore=[""]
 )
+
 
 def get_stats(paths):
     cc = CCHarvester(paths, cc_config)
     raw = RawHarvester(paths, cc_config)
     cc.run()
     raw.run()
-    
-    header = ['Filename', "SLOC", '#Functions', '#Intercepts', 'Max CC', 
+
+    header = ['Filename', "SLOC", '#Functions', '#Intercepts', 'Max CC',
               'Ave CC', 'Median CC', 'Min CC']
     data = {}
     for file_data in cc.results:
         filename, cc_results = file_data
-        complexity = [x.complexity for x in cc_results if hasattr(x, 'is_method') and x.is_method]
+        complexity = [x.complexity for x in cc_results if hasattr(
+            x, 'is_method') and x.is_method]
         if len(complexity) > 0:
-            print "Getting Complexity for:", filename
+            print("Getting Complexity for:", filename)
             data[filename] = {}
             data[filename]['Filename'] = filename
             data[filename]['Max CC'] = max(complexity)
@@ -48,16 +50,17 @@ def get_stats(paths):
             data[filename]['Ave CC'] = np.mean(complexity)
             data[filename]['#Functions'] = len(complexity)
         else:
-            print "Skipping ", filename
+            print("Skipping ", filename)
 
     for file_data in raw.results:
         filename, results = file_data
         if filename in data:
             data[filename]['SLOC'] = results['sloc']
         else:
-            print "Skipping ", filename
+            print("Skipping ", filename)
 
     return data
+
 
 def write_csv(data, header, outfile):
     with open(outfile, 'wb') as csv_out:
@@ -66,24 +69,22 @@ def write_csv(data, header, outfile):
         for row in data:
             writer.writerow(row)
 
+
 if __name__ == "__main__":
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument("-p", "--paths", required=True,
-                    help="Paths to parse")
+                   help="Paths to parse")
     p.add_argument("-o", "--outfile", default='static_stats.csv',
-                    help="File to save results to")
+                   help="File to save results to")
 
-    
     args = p.parse_args()
     stats = get_stats(args.paths)
 
-    headers = ['Filename', "SLOC", '#Functions', 'Max CC', 
-              'Ave CC', 'Med CC', 'Min CC']
+    headers = ['Filename', "SLOC", '#Functions', 'Max CC',
+               'Ave CC', 'Med CC', 'Min CC']
     data = []
-    for filename, d in stats.items():
-        data.append( [d[h] for h in headers]) # flip the code and name and sort
-    print(tabulate(data, headers=headers))
+    for filename, d in list(stats.items()):
+        data.append([d[h] for h in headers])  # flip the code and name and sort
+    print((tabulate(data, headers=headers)))
     write_csv(data, headers, args.outfile)
-
-

@@ -1,7 +1,7 @@
-# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a 
-# non-exclusive license for use of this work by or on behalf of the U.S. 
-# Government. Export of this data may require a license from the United States 
+# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
 # Government.
 
 
@@ -19,6 +19,6 @@ def get_sp_and_entry(binary_filename):
         sp(int), entry(int):  Stack pointer and entry point of board
     '''
     with open(binary_filename, 'rb') as bin_file:
-        sp, entry = unpack('<II',bin_file.read(8))
+        sp, entry = unpack('<II', bin_file.read(8))
 
     return sp, entry

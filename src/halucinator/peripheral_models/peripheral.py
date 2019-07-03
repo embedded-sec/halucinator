@@ -1,7 +1,7 @@
-# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a 
-# non-exclusive license for use of this work by or on behalf of the U.S. 
-# Government. Export of this data may require a license from the United States 
+# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
 # Government.
 
 import struct
@@ -17,12 +17,14 @@ def requires_tx_map(method):
     method.req_tx_map = True
     return method
 
+
 def requires_rx_map(method):
     '''
         Decorator which register class methods as requiring a rx map
     '''
     method.req_rx_map = True
     return method
+
 
 def requires_interrupt_map(method):
     '''

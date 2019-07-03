@@ -1,16 +1,17 @@
-# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a 
-# non-exclusive license for use of this work by or on behalf of the U.S. 
-# Government. Export of this data may require a license from the United States 
+# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
 # Government.
 
+from ..bp_handler import BPHandler, bp_handler
 import re
 from binascii import hexlify
 from os import path
 import sys
 
-sys.path.insert(0,path.dirname(path.dirname(path.abspath(__file__))))
-from ..bp_handler import BPHandler, bp_handler
+sys.path.insert(0, path.dirname(path.dirname(path.abspath(__file__))))
+
 
 class ARMv7MEABILogger(BPHandler):
     '''
@@ -19,19 +20,19 @@ class ARMv7MEABILogger(BPHandler):
 
         [r0, r1, r2, r3, s0#4, s4#4, s8#4]
     '''
+
     def __init__(self, filename=None):
         self.fd = None
         if filename != None:
-            self.fd = open(filename, 'wt') 
+            self.fd = open(filename, 'wt')
         self.params = {}
         self.ret_values = {}
         self.func_names = {}
 
-
     def register_handler(self, addr, func_name, params=None, ret_val=None):
         '''
         This will be called by the intercept registration function
-        
+
         args:
             func_name: Name of function being bp will execute for
             params: Specifies where parameters are stored format
@@ -50,34 +51,35 @@ class ARMv7MEABILogger(BPHandler):
         '''
 
         '''
-        func_name = self.func_names[addr]          
+        func_name = self.func_names[addr]
         params = self.params[addr]
-        print params   
+        print(params)
         sp = qemu.regs.sp
         param_values = []
         for p_num, param in enumerate(params):
             if param.startswith('r'):
-                print "Loc", param
+                print("Loc", param)
                 value = qemu.read_register(param)
             elif param.startswith('s'):
-                m = re.match('s([0-9]+)#([0-9]+)',param)
+                m = re.match('s([0-9]+)#([0-9]+)', param)
                 if m != None:
                     (offset, length) = m.groups()
-                    offset= int(offset)
+                    offset = int(offset)
                     length = int(length)
-                    value = qemu.read_memory(sp+offset,1,length, raw=True)
+                    value = qemu.read_memory(sp+offset, 1, length, raw=True)
                     value = hexlify(value)
             if value != None:
                 if type(value) == int:
-                    param_values.append("%s: 0x%08x" %(p_num, value))
+                    param_values.append("%s: 0x%08x" % (p_num, value))
                 else:
-                    param_values.append("%s: %s" %(p_num, str(value)))
+                    param_values.append("%s: %s" % (p_num, str(value)))
         pc = qemu.regs.pc
-        log_str = hex(pc) + ": " + func_name + " " + ", ".join(param_values) +"\n"
+        log_str = hex(pc) + ": " + func_name + " " + \
+            ", ".join(param_values) + "\n"
         if self.fd:
             self.fd.write(log_str)
             self.fd.flush()
         else:
-            print log_str
+            print(log_str)
 
         return True, self.ret_values[addr]

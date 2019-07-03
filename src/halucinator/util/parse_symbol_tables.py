@@ -1,12 +1,13 @@
-# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a 
-# non-exclusive license for use of this work by or on behalf of the U.S. 
-# Government. Export of this data may require a license from the United States 
+# Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
 # Government.
 
 
 import argparse
-import os, sys
+import os
+import sys
 import string
 import IPython
 from elftools.common.exceptions import ELFError
@@ -16,12 +17,12 @@ import binascii
 import struct
 
 # Little endian format strings
-LE_FORMAT_STRS = {'uint32_t': '<I', "uint16_t":'<H', 'uint8_t':'<B',
-                  'int32_t': '<i', "uint16_t":'<h', 'uint8_t':'<b'}
+LE_FORMAT_STRS = {'uint32_t': '<I', "uint16_t": '<H', 'uint8_t': '<B',
+                  'int32_t': '<i', "uint16_t": '<h', 'uint8_t': '<b'}
 
 # Big endian format strings
-BE_FORMAT_STRS = {'uint32_t': '>I', "uint16_t":'>H', 'uint8_t':'>B',
-                  'int32_t': '>i', "uint16_t":'>h', 'uint8_t':'>b'}
+BE_FORMAT_STRS = {'uint32_t': '>I', "uint16_t": '>H', 'uint8_t': '>B',
+                  'int32_t': '>i', "uint16_t": '>h', 'uint8_t': '>b'}
 
 
 def sym_format(value, ty_str, is_le=True):
@@ -51,12 +52,11 @@ def sym_format(value, ty_str, is_le=True):
                     return hex(struct.unpack(">I", value)[0])
         except struct.error:
             return "Parse_Err: %s" % binascii.hexlify(value)
-            
 
         if len(value) <= 16:
-            return binascii.hexlify(value[0:16]) 
+            return binascii.hexlify(value[0:16])
         else:
-            return binascii.hexlify(value[0:16]) +"..."
+            return binascii.hexlify(value[0:16]) + "..."
 
 
 class DWARFReader(object):
@@ -76,12 +76,12 @@ class DWARFReader(object):
         for cu in self._dwarf.iter_CUs():
             for die in cu.iter_DIEs():
                 if die.offset in self.offset_lut:
-                    raise ValueError ("Collision on Symbols Offsets")
+                    raise ValueError("Collision on Symbols Offsets")
                 self.offset_lut[die.offset] = die
                 if die.tag == 'DW_TAG_subprogram':
                     if 'DW_AT_name' in die.attributes:
                         self.function_lut[die.attributes['DW_AT_name'].value] = die
-                    
+
                 elif die.tag == 'DW_TAG_typedef':
                     if 'DW_AT_name' in die.attributes:
                         self.typedef_lut[die.attributes['DW_AT_name'].value] = die
@@ -109,7 +109,7 @@ class DWARFReader(object):
         '''
         if str_list == None:
             str_list = []
-        if 'DW_AT_type' in die.attributes:       
+        if 'DW_AT_type' in die.attributes:
             type_die = self.get_referenced_die('DW_AT_type', die)
             if type_die.tag == 'DW_TAG_pointer_type':
                 self.get_type_str(type_die, str_list)
@@ -123,12 +123,12 @@ class DWARFReader(object):
             elif type_die.tag == 'DW_TAG_union_type':
                 members = []
                 for c in type_die.iter_children():
-                    member_str = self.get_type_str(c, [])          
+                    member_str = self.get_type_str(c, [])
                     members.append(member_str)
                 if len(members) == 1:
-                    str_list.append("union {%s};" %(member_str[0]))
+                    str_list.append("union {%s};" % (member_str[0]))
                 else:
-                    str_list.append("union {%s};" %(",".join(member_str)))
+                    str_list.append("union {%s};" % (",".join(member_str)))
             elif type_die.tag == 'DW_TAG_array_type':
                 self.get_type_str(type_die, str_list)
                 str_list.append("[]")
@@ -138,12 +138,12 @@ class DWARFReader(object):
             elif type_die.tag == 'DW_TAG_subroutine_type':
                 params = []
                 for c in type_die.iter_children():
-                    param_str = self.get_type_str(c, [])          
+                    param_str = self.get_type_str(c, [])
                     params.append(param_str)
                 if len(params) == 1:
-                    str_list.append("(%s)" %(params[0]))
-                else: 
-                    str_list.append("(%s)" %(",".join(params)))
+                    str_list.append("(%s)" % (params[0]))
+                else:
+                    str_list.append("(%s)" % (",".join(params)))
             else:
                 type_name = type_die.attributes['DW_AT_name'].value
                 str_list.append(type_name)
@@ -178,7 +178,7 @@ class DWARFReader(object):
         '''
         if funct_die.tag != 'DW_TAG_subprogram':
             raise TypeError('funct_die.tag not a of type DW_TAG_subprogram')
-        
+
         name = funct_die.attributes['DW_AT_name'].value
         params = []
         for child in funct_die.iter_children():
@@ -190,11 +190,11 @@ class DWARFReader(object):
         return "%s %s(%s);" % (ret_type, name, ", ".join(params))
 
     def get_function_die(self, f_name):
-        return  self.function_lut[f_name]
+        return self.function_lut[f_name]
 
     def get_return_type_die(self, func_die):
-        return 
-        
+        return
+
     def get_function_prototype(self, f_name):
         f_die = self.function_lut[f_name]
         return self.get_function_parameters(f_die)
@@ -215,8 +215,8 @@ class DWARFReader(object):
             if child.tag == 'DW_TAG_enumerator':
                 child_name = child.attributes['DW_AT_name'].value
                 value = child.attributes['DW_AT_const_value'].value
-                member_strs.append("%s=%s;" %(child_name, hex(value)))
-        return "enum {%s}; "%(" ".join(member_strs))
+                member_strs.append("%s=%s;" % (child_name, hex(value)))
+        return "enum {%s}; " % (" ".join(member_strs))
 
     def get_typedef_desc_from_die(self, tydef_die):
         # print '='*80
@@ -231,25 +231,26 @@ class DWARFReader(object):
             size = None
         member_strs = []
         if type_die.tag == 'DW_TAG_structure_type':
-            
+
             for child in type_die.iter_children():
                 child_name = child.attributes['DW_AT_name'].value
                 child_type_str = self.get_type_str(child)
                 c_size = self.get_type_size(child)
-                decl_str = '\t%s %s; Size: %i\n' % (child_type_str, child_name, c_size)
+                decl_str = '\t%s %s; Size: %i\n' % (
+                    child_type_str, child_name, c_size)
 
                 member_strs.append(decl_str)
-            ret_str =  "struct %s {\n%s};" %(name,"".join(member_strs))
+            ret_str = "struct %s {\n%s};" % (name, "".join(member_strs))
         elif type_die.tag == 'DW_TAG_enumeration_type':
             ret_str = self.get_enum_str(type_die)
         elif type_die.tag == 'DW_TAG_pointer_type':
             size = self.get_type_size(type_die)
-            ret_str = (self.get_type_str(type_die) + " * ; Size: "+ str(size))
-        #if type_die.tag == 'DW_TAG_base_type':
+            ret_str = (self.get_type_str(type_die) + " * ; Size: " + str(size))
+        # if type_die.tag == 'DW_TAG_base_type':
         else:
             size = self.get_type_size(type_die)
-            ret_str = (self.get_type_str(type_die) + "Size: "+ str(size) )     
-        #else:
+            ret_str = (self.get_type_str(type_die) + "Size: " + str(size))
+        # else:
         #    print "Unhandled type"
         #    print type_die
         return ret_str, size
@@ -258,13 +259,13 @@ class DWARFReader(object):
 def main(stream=None):
     # parse the command-line arguments and invoke ReadElf
     argparser = argparse.ArgumentParser(
-            usage='usage: %(prog)s [options] <elf-file>',
-            description="Parses DWARF debugging from elf file",
-            prog='readelf.py')
+        usage='usage: %(prog)s [options] <elf-file>',
+        description="Parses DWARF debugging from elf file",
+        prog='readelf.py')
     argparser.add_argument('file',
-            nargs='?', default=None,
-            help='ELF file to parse',)
- 
+                           nargs='?', default=None,
+                           help='ELF file to parse',)
+
     args = argparser.parse_args()
 
     if not args.file:
@@ -273,17 +274,18 @@ def main(stream=None):
 
     with open(args.file, 'rb') as file:
         try:
-            print "Running"
+            print("Running")
             reader = DWARFReader(file)
-            print reader.get_function_prototype('ETH_DMAReceptionEnable')
-            decl, size = reader.get_typedef_desc_from_die('ETH_DMARxFrameInfos')
-            print decl, "Size: ", size
+            print(reader.get_function_prototype('ETH_DMAReceptionEnable'))
+            decl, size = reader.get_typedef_desc_from_die(
+                'ETH_DMARxFrameInfos')
+            print(decl, "Size: ", size)
         except ELFError as ex:
             sys.stderr.write('ELF error: %s\n' % ex)
             sys.exit(1)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 if __name__ == '__main__':
     main()
-    #profile_main()
+    # profile_main()
