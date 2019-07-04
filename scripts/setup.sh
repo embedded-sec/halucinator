@@ -27,3 +27,16 @@ workon halucinator
 pip install deps/avatar2
 pip install -r src/requirements.txt
 pip install src
+
+
+### make keystone work:
+
+mkdir deps/keystone/build
+pushd deps/keystone/build
+cmake -DBUILD_SHARED_LIBS=ON -G "Unix Makefiles" ../
+make -j8
+SITEPKG=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
+cp -v ./llvm/lib64/libkeystone.so $(SITEPKG)/keystone/
+popd
+
+echo "[*] Done"

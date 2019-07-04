@@ -17,7 +17,7 @@ in order to allow new developers to get started hacking on halucinator.
  * 0MQ
  * python-tk
  * ethtool
-
+ * keystone (because the python bindings don't build it)
 
 ## Setup / build instructions
 
@@ -72,6 +72,38 @@ in order to allow new developers to get started hacking on halucinator.
         pip install -r src/requirements.txt
         pip install src/
  
+
+ 1. Build keystone as follows:
+
+    First, make a build directory and enter it:
+
+        mkdir deps/keystone/build
+        pushd deps/keystone/build
+
+    Next, run cmake to build locally:
+
+        cmake -DBUILD_SHARED_LIBS=ON -G "Unix Makefiles" ../
+        
+    You can install capstone system-wide on Redhat systems as follows:
+
+        cmake -DCMAKE_INSTALL_PREFIX="/usr/local/" -DLLVM_LIBDIR_SUFFIX=64 -DBUILD_SHARED_LIBS=ON -G "Unix Makefiles" ../
+
+    Now once either of these commands completes, build the library:
+
+        make -j8
+
+    If you configured it to install, use:
+
+        sudo make install
+
+    Otherwise you can copy the libkeystone shared object into your local keystone 
+    installation. **You need to do this with virtualenv activated**. Then do:
+
+        SITEPKG=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
+        cp -v ./llvm/lib64/libkeystone.so $(SITEPKG)/keystone/
+
+    this works as keystone python bindings search there.
+
  1. Build avatar-qemu:
 
         cd avatar-qemu

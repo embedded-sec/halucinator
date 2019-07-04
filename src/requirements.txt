@@ -4,3 +4,4 @@ IPython
 pyelftools
 scapy
 pycparser
+keystone-engine
