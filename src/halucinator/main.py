@@ -348,7 +348,7 @@ def override_addresses(config, address_file):
         function name
     '''
     with open(address_file, 'rb') as infile:
-        addr_config = yaml.load(infile)
+        addr_config = yaml.load(infile, Loader=yaml.FullLoader)
         addr2func_lut = addr_config['symbols']
         func2addr_lut = {}
         for key, val in list(addr2func_lut.items()):
@@ -406,7 +406,7 @@ if __name__ == '__main__':
     log = logging.getLogger()
     # log.setLevel(logging.INFO)
     with open(args.config, 'rb') as infile:
-        config = yaml.load(infile)
+        config = yaml.load(infile, Loader=yaml.FullLoader)
 
     if args.address is not None:
         override_addresses(config, args.address)
@@ -420,7 +420,7 @@ if __name__ == '__main__':
         # Use memory configuration from mem_config
         base_dir = os.path.split(args.memory_config)[0]
         with open(args.memory_config, 'rb') as infile:
-            mem_config = yaml.load(infile)
+            mem_config = yaml.load(infile, Loader=yaml.FullLoader)
             if 'options' in mem_config:
                 config['options'] = mem_config['options']
             config['memories'] = mem_config['memories']

@@ -40,7 +40,7 @@ class IOServer(Thread):
 
     def register_topic(self, topic, method):
         log.debug("Registering RX_Port: %s, Topic: %s" % (self.rx_port, topic))
-        self.rx_socket.setsockopt(zmq.SUBSCRIBE, topic)
+        self.rx_socket.setsockopt(zmq.SUBSCRIBE, topic.encode("utf-8"))
         self.handlers[topic] = method
 
     def run(self):
