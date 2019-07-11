@@ -3,7 +3,7 @@
 ## Prerequisites
 
 ```
-apt install python-pip gcc-arm-none-eabi
+apt install pkg-config build-essential zlib1g-dev pkg-config libglib2.0-dev binutils-dev libboost-all-dev autoconf libtool libssl-dev libpixman-1-dev libpython-dev python-pip python-capstone virtualenv gcc-arm-none-eabi
 pip install virtualenv virtualenvwrapper
 ```
 
@@ -19,6 +19,7 @@ setup.sh
 
 Build QEMU used by HALucinator
 ```
+cd 
 ./build_qemu.sh
 ```
 
