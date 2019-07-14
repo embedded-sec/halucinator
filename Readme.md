@@ -38,10 +38,14 @@ workon halucinator
 ./halucinator -c=<config_file.yaml> -a=<address_file.yaml> -m=<memory_file.yaml>
 ```
 
+## Running an Example
 
-## Build STM MX Cube Examples
+### Building STM MX Cube Examples
 
-A tool to convert the STM's Software Workbench for STM (SW4STM),
+This has already been done for Uart example file below.
+
+A tool to convert the STM's Software Workbench for STM (SW4STM) was developed to
+enable compiling their IDE projects using make.
 This has only been tested on a few STM32F4 examples from STM32Cube_F4_V1.21.0.
 It compile them as cortex-m3 devices and not cortex-m4 to enable easier 
 emulation in QEMU. 
@@ -62,12 +66,13 @@ make all
 ```
 
 
-##  STM32F469I Uart Example
+###  STM32F469I Uart Example
 
-To give an idea how to use Halucinator and example is provided `test/STM32/example`.
+To give an idea how to use Halucinator an example is provided in `test/STM32/example`.
 
-### Setup
-Setup was done prior, but this procedure would be followed for other binaries.
+#### Setup
+Note: This was done prior and the files are in the repo in `test/STM/example`.
+This procedure should be followed for other binaries.
 In list below after the colon (:) denotes the file/cmd .  
 
 1. Compile binary as above
@@ -83,7 +88,7 @@ from an elf with symbols.  This requires angr and pyyaml.
 This was used to create `Uart_Hyperterminal_IT_O0_addrs`
 
 
-### Running
+#### Running
 
 Start the UART Peripheral device,  this a script that will subscribe to the Uart on the peripheral server and
 enable interacting with it.
@@ -126,10 +131,12 @@ INFO:STM32F4UART:Writing:
 
 ```
 
-
-### Stopping
+#### Stopping
 
 Avatar creates many threads and std input gets sent to QEMU thus killing it is not trivial. 
 I usually have to kill it with `ctrl-z` and `kill %`
 
+Logs are kept in the `<directory of the config file>/tmp/<value of -n option`. e.g `test/STM32/example/tmp/Uart_Example/`
 
+## TODOs
+Document what is in config file, address files, and memory files
