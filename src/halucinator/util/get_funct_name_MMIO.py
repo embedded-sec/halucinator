@@ -11,8 +11,6 @@ from elf_sym_hal_getter import build_addr_to_sym_lookup
 
 def get_names_for_addrs(stats_file, binary):
 
-    
-
     with open(stats_file, 'rb') as infile:
         stats = yaml.safe_load(infile)
 
@@ -29,7 +27,7 @@ def get_names_for_addrs(stats_file, binary):
             funcs['$unknown_function'].append(mmio_addr)
     
     for func, data in funcs.items():
-        print '%s : %s' %(func, str(data))
+        print( '%s : %s' %(func, str(data)))
 
 
 

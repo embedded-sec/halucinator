@@ -10,6 +10,13 @@ workon halucinator
 git clone https://github.com/avatartwo/avatar2.git 3rd_party/avatar2
 
 pip install -e 3rd_party/avatar2
+
+# Avatar broke emulate capability which halucinator uses,
+# Use old commit until fixed
+pushd 3rd_party/avatar2
+git checkout c43d08f10b8fdc662d0cc66e4b3bd2d272c8c9ba
+popd
+
 pip install -r src/requirements.txt
 pip install -e src
 
