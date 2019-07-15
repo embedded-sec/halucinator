@@ -67,7 +67,7 @@ class HaltPeripheral(AvatarPeripheral):
         while 1:
             pass
 
-    def hw_write(self, offset, size, value, pc):
+    def hw_write(self, offset, size, value, pc=0xBAADBAAD):
         addr = self.address + offset
         log.info("%s: Write to addr: 0x%08x, size: %i, value: 0x%08x, pc %s" % (
             self.name, addr, size, value, hex(pc)))
