@@ -1,6 +1,8 @@
 # Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. 
-# Government retains certain rights in this software.
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
+# Government.
 
 
 from ...peripheral_models.sd_card import SDCardModel
@@ -13,7 +15,8 @@ import os
 
 class SD_Card(BPHandler):
 
-    CSD_Struct = binascii.unhexlify('0100000e0032b50509000000000001408a1d0000142c014020017f0000000209000000000100000000')
+    CSD_Struct = binascii.unhexlify(
+        '0100000e0032b50509000000000001408a1d0000142c014020017f0000000209000000000100000000')
 
     blocks = {}
     sd_block_size = 0x200
@@ -38,30 +41,30 @@ class SD_Card(BPHandler):
     # HAL_StatusTypeDef HAL_SD_ReadBlocks_IT(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
     # HAL_StatusTypeDef HAL_SD_ReadBlocks_DMA(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
     @bp_handler(['HAL_SD_ReadBlocks', 'HAL_SD_ReadBlocks_IT', 'HAL_SD_ReadBlocks_DMA'])
-    
     def read_blocks(self, qemu, bp_addr):
         hw_id = self.get_hw_instance(qemu)
         pdata = qemu.regs.r1
         block_addr = qemu.regs.r2
         num_blocks = qemu.regs.r3
-        
-        print "SD_CARD Read Block, BlockAddr %i, #Blocks: %i" % (block_addr, num_blocks )
+
+        print("SD_CARD Read Block, BlockAddr %i, #Blocks: %i" %
+              (block_addr, num_blocks))
         for i in range(num_blocks):
             block = block_addr + i
             addr = pdata + (i*SDCardModel.get_block_size(hw_id))
             data = SDCardModel.read_block(hw_id, block)
             if block not in SD_Card.blocks:
-                print "Block not in blocks", block
+                print("Block not in blocks", block)
             else:
                 if SD_Card.blocks[block] != data:
-                    print "Data Different:", block
-                    print "Block", binascii.hexlify(SD_Card.blocks[block])
-                    print "Data:", binascii.hexlify(data)
+                    print("Data Different:", block)
+                    print("Block", binascii.hexlify(SD_Card.blocks[block]))
+                    print("Data:", binascii.hexlify(data))
             if len(data) != SDCardModel.get_block_size(hw_id):
-                print "Block lengths wrong", binascii.hexlify(data)
+                print("Block lengths wrong", binascii.hexlify(data))
             qemu.write_memory(addr, 1, data, len(data), raw=True)
         return True, 0
-    
+
     # HAL_StatusTypeDef HAL_SD_WriteBlocks(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks, uint32_t Timeout)
     # HAL_StatusTypeDef HAL_SD_WriteBlocks_IT(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
     # HAL_StatusTypeDef HAL_SD_WriteBlocks_DMA(SD_HandleTypeDef *hsd, uint8_t *pData, uint32_t BlockAdd, uint32_t NumberOfBlocks)
@@ -71,27 +74,29 @@ class SD_Card(BPHandler):
         pdata = qemu.regs.r1
         block_addr = qemu.regs.r2
         num_blocks = qemu.regs.r3
-        
-        print "SD_CARD Write Block, BlockAddr %i, #Blocks: %i" % (block_addr, num_blocks )
+
+        print("SD_CARD Write Block, BlockAddr %i, #Blocks: %i" %
+              (block_addr, num_blocks))
         for i in range(num_blocks):
             block = block_addr + i
             addr = pdata + (i*SDCardModel.get_block_size(hw_id))
-            sd_data=qemu.read_memory(addr,1,SDCardModel.get_block_size(hw_id), raw=True)
+            sd_data = qemu.read_memory(
+                addr, 1, SDCardModel.get_block_size(hw_id), raw=True)
             SD_Card.blocks[block] = sd_data
             SDCardModel.write_block(hw_id, block, sd_data)
-        
+
         return True, 0
 
     # HAL_StatusTypeDef HAL_SD_Erase(SD_HandleTypeDef *hsd, uint32_t BlockStartAdd, uint32_t BlockEndAdd)
     @bp_handler(['HAL_SD_Erase'])
     def erase_blocks(self, qemu, bp_addr):
-        print "SD_CARD Erase block"
+        print("SD_CARD Erase block")
         return True, 0
 
     # HAL_StatusTypeDef HAL_SD_GetCardCID(SD_HandleTypeDef *hsd, HAL_SD_CardCIDTypeDef *pCID)
     @bp_handler(['HAL_SD_Erase'])
     def get_card_CID(self, qemu, bp_addr):
-        print "SD_CARD CID"
+        print("SD_CARD CID")
         return True, 0
 
     # HAL_StatusTypeDef HAL_SD_GetCardCSD(SD_HandleTypeDef *hsd, HAL_SD_CardCSDTypeDef *pCSD)
@@ -100,17 +105,18 @@ class SD_Card(BPHandler):
         pCSD = qemu.regs.r1
         #qemu.write_memory(DMARxFrameInfos_Addr, 1, FrameInfo, len(FrameInfo), raw=True)
         # Below is recorded value
-        
-        qemu.write_memory(pCSD,1, SD_Card.CSD_Struct, len(SD_Card.CSD_Struct),raw=True )
-        print "SD_CARD get CSD"
+
+        qemu.write_memory(pCSD, 1, SD_Card.CSD_Struct,
+                          len(SD_Card.CSD_Struct), raw=True)
+        print("SD_CARD get CSD")
         return True, 0
 
     # HAL_StatusTypeDef HAL_SD_GetCardStatus(SD_HandleTypeDef *hsd, HAL_SD_CardStatusTypeDef *pStatus)
     @bp_handler(['HAL_SD_GetCardStatus'])
     def get_card_status(self, qemu, bp_addr):
-        print "SD_CARD Get Card Status"
+        print("SD_CARD Get Card Status")
         #pStatus = qemu.regs.r1
-        #struct.pack("<")
+        # struct.pack("<")
         return True, 0
 
     # HAL_StatusTypeDef HAL_SD_GetCardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTypeDef *pCardInfo)
@@ -127,32 +133,31 @@ class SD_Card(BPHandler):
         LogBlockNbr = 0x762c00
         LogBlockSize = 0x200
 
-        card_info = struct.pack("<IIIIIIII", card_type, card_version, 
-                            card_class, RelCardAddr, BlockNbr, BlockSize,
-                            LogBlockNbr, LogBlockSize)
-        
-        qemu.write_memory(pCardInfo,1, card_info, len(card_info),raw=True )
+        card_info = struct.pack("<IIIIIIII", card_type, card_version,
+                                card_class, RelCardAddr, BlockNbr, BlockSize,
+                                LogBlockNbr, LogBlockSize)
+
+        qemu.write_memory(pCardInfo, 1, card_info, len(card_info), raw=True)
         return True, 0
 
     # HAL_StatusTypeDef HAL_SD_ConfigWideBusOperation(SD_HandleTypeDef *hsd, uint32_t WideMode)
     @bp_handler(['HAL_SD_ConfigWideBusOperation'])
     def config_wide_bus(self, qemu, bp_addr):
-        print "SD_CARD config bus operation"
+        print("SD_CARD config bus operation")
         return True, 0
 
     # HAL_SD_CardStateTypeDef HAL_SD_GetCardState(SD_HandleTypeDef *hsd)
     @bp_handler(['HAL_SD_GetCardState'])
     def get_card_state(self, qemu, bp_addr):
-    
+
         # HAL_SD_CARD_READY                  = 0x00000001U,  /*!< Card state is ready                     */
         # HAL_SD_CARD_IDENTIFICATION         = 0x00000002U,  /*!< Card is in identification state         */
         # HAL_SD_CARD_STANDBY                = 0x00000003U,  /*!< Card is in standby state                */
-        # HAL_SD_CARD_TRANSFER               = 0x00000004U,  /*!< Card is in transfer state               */  
+        # HAL_SD_CARD_TRANSFER               = 0x00000004U,  /*!< Card is in transfer state               */
         # HAL_SD_CARD_SENDING                = 0x00000005U,  /*!< Card is sending an operation            */
         # HAL_SD_CARD_RECEIVING              = 0x00000006U,  /*!< Card is receiving operation information */
         # HAL_SD_CARD_PROGRAMMING            = 0x00000007U,  /*!< Card is in programming state            */
         # HAL_SD_CARD_DISCONNECTED           = 0x00000008U,  /*!< Card is disconnected                    */
-        # HAL_SD_CARD_ERROR                  = 0x000000FFU   /*!< Card response Error     
-        print "SD_CARD Get Card State"
+        # HAL_SD_CARD_ERROR                  = 0x000000FFU   /*!< Card response Error
+        print("SD_CARD Get Card State")
         return True, 4
-    

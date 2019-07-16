@@ -1,6 +1,8 @@
 # Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. 
-# Government retains certain rights in this software.
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
+# Government.
 
 
 from ...peripheral_models.ieee802_15_4 import IEEE802_15_4
@@ -16,35 +18,35 @@ log = logging.getLogger("SAMR21-Radio")
 log.setLevel(logging.DEBUG)
 
 # SPI Addresses
-REG_TRX_STATUS  = 0x01
-REG_TRX_STATE   = 0x02
-REG_TRX_CTRL_1  = 0x04  # Default = 0x22
-REG_PART_NUM    = 0x1C    # Reset 0x0B 
-REG_VERSION_NUM = 0x1D # Reset 0x02
-REG_MAN_ID_0    = 0x1E #0x1F 
-REG_MAN_ID_1    = 0x1F  #0x00
+REG_TRX_STATUS = 0x01
+REG_TRX_STATE = 0x02
+REG_TRX_CTRL_1 = 0x04  # Default = 0x22
+REG_PART_NUM = 0x1C    # Reset 0x0B
+REG_VERSION_NUM = 0x1D  # Reset 0x02
+REG_MAN_ID_0 = 0x1E  # 0x1F
+REG_MAN_ID_1 = 0x1F  # 0x00
 STATE_TRX_OFF = 0x08
 TRXCMD_PLL_ON = 0x09
 STATE_RX_ON = 0x06
 
 # IRQ Status regs and flags, reading from register clears values
-REG_IRQ_MASK   = 0x0E  # 0 Disabled, 1 enabled
+REG_IRQ_MASK = 0x0E  # 0 Disabled, 1 enabled
 REG_IRQ_STATUS = 0x0F
-IRQ_BAT_LOW     = 1 << 7
-IRQ_TRX_UR      = 1 << 6
-IRQ_ADDR_MATCH  = 1 << 5
+IRQ_BAT_LOW = 1 << 7
+IRQ_TRX_UR = 1 << 6
+IRQ_ADDR_MATCH = 1 << 5
 IRQ_CCA_ED_DONE = 1 << 4
-IRQ_TRX_END     = 1 << 3
-IRQ_RX_START    = 1 << 2
-IRQ_PLL_UNLOCK  = 1 << 1
-IRQ_PLL_LOCK    = 1 
+IRQ_TRX_END = 1 << 3
+IRQ_RX_START = 1 << 2
+IRQ_PLL_UNLOCK = 1 << 1
+IRQ_PLL_LOCK = 1
 
-TRX_STATUS_P_ON    = 0x00
+TRX_STATUS_P_ON = 0x00
 TRX_STATUS_BUSY_RX = 0x01
-TRX_STATUS_RX_ON   = 0x06
+TRX_STATUS_RX_ON = 0x06
 TRX_STATUS_TRX_OFF = 0x08
-TRX_STATUS_TX_ON   = 0x09
-TRX_STATUS_SLEEP   = 0x0f
+TRX_STATUS_TX_ON = 0x09
+TRX_STATUS_SLEEP = 0x0f
 TRX_STATUS_PREP_DEEP_SLEEP = 0x10
 TRX_STATUS_BUSY_RX_AACK = 0x11
 TRX_STATUS_BUSY_TX_ARET = 0x12
@@ -59,11 +61,12 @@ class SAMR21Radio(BPHandler):
 
     PADDING = 2
     CRC_SIZE = 4
+
     def __init__(self, model=IEEE802_15_4):
         BPHandler.__init__(self)
-        self.model= model
+        self.model = model
         self.regs = defaultdict(int)
-        self.model.rx_frame_isr = 20 
+        self.model.rx_frame_isr = 20
         self.last_rx_time = time.time()
 
     def get_id(self, qemu):
@@ -84,22 +87,22 @@ class SAMR21Radio(BPHandler):
         # log.debug("Write Reg %s from pc:%s" % (hex(reg),hex(qemu.regs.lr)))
         if reg == RF233_REG_TRX_STATE:
             self.regs[RF233_REG_TRX_STATE] = value
-       
+
         return True, None
 
     @bp_handler(['trx_bit_read'])
     def read_bit(self, qemu, bp_addr):
         # uint8_t trx_bit_read(uint8_t addr, uint8_t mask, uint8_t pos);
         reg = qemu.regs.r0
-        log.debug("Read Bit %s from pc:%s" % (hex(reg),hex(qemu.regs.lr)))
+        log.debug("Read Bit %s from pc:%s" % (hex(reg), hex(qemu.regs.lr)))
         return True, None
-    
+
     @bp_handler(['trx_bit_write'])
     def write_bit(self, qemu, bp_addr):
         # void trx_bit_write(uint8_t reg_addr, uint8_t mask, uint8_t pos,
         # 		uint8_t new_value);
         reg = qemu.regs.r0
-        log.debug("Write Bit %s from pc:%s" % (hex(reg),hex(qemu.regs.lr)))
+        log.debug("Write Bit %s from pc:%s" % (hex(reg), hex(qemu.regs.lr)))
         return True, None
 
     @bp_handler(['trx_frame_read'])
@@ -107,7 +110,7 @@ class SAMR21Radio(BPHandler):
         # void trx_frame_read(uint8_t *data, uint8_t length);
         data_ptr = qemu.regs.r0
         length = qemu.regs.r1
-        log.info("Read Frame %s , len %i" % (hex(data_ptr),length ))
+        log.info("Read Frame %s , len %i" % (hex(data_ptr), length))
         if self.model.has_frame():
             frame, rx_time = self.model.get_first_frame(True)
             if length < len(frame):
@@ -119,7 +122,7 @@ class SAMR21Radio(BPHandler):
         # void trx_frame_write(uint8_t *data, uint8_t length);
         data_ptr = qemu.regs.r0
         length = qemu.regs.r1
-        log.info("Write Frame %s , len %i" % (hex(data_ptr),length))
+        log.info("Write Frame %s , len %i" % (hex(data_ptr), length))
         frame = qemu.read_memory(data_ptr, 1, length, raw=True)
         self.model.tx_frame(self.get_id(qemu), frame)
         return True, None
@@ -128,21 +131,21 @@ class SAMR21Radio(BPHandler):
     def sram_read(self, qemu, bp_addr):
         # void trx_sram_read(uint8_t addr, uint8_t *data, uint8_t length);
         data_ptr = qemu.regs.r0
-        log.info("SRAM Read %s , len %i" % (hex(data_ptr),qemu.regs.r1 ))
+        log.info("SRAM Read %s , len %i" % (hex(data_ptr), qemu.regs.r1))
         return True, None
 
     @bp_handler(['trx_sram_write'])
     def sram_write(self, qemu, bp_addr):
          # void trx_sram_write(uint8_t addr, uint8_t *data, uint8_t length);
         data_ptr = qemu.regs.r0
-        log.info("SRAM Write %s , len %i" % (hex(data_ptr),qemu.regs.r1 ))
+        log.info("SRAM Write %s , len %i" % (hex(data_ptr), qemu.regs.r1))
         return True, None
 
     @bp_handler(['trx_aes_wrrd'])
     def aes_wrrd(self, qemu, bp_addr):
         # void trx_aes_wrrd(uint8_t addr, uint8_t *idata, uint8_t length);
         data_ptr = qemu.regs.r0
-        log.info("SRAM Write %s , len %i" % (hex(data_ptr),qemu.regs.r1 ))
+        log.info("SRAM Write %s , len %i" % (hex(data_ptr), qemu.regs.r1))
         return True, None
 
     # void trx_spi_done_cb_init(void *spi_done_cb);
@@ -153,4 +156,3 @@ class SAMR21Radio(BPHandler):
          # void PhyReset(void);
         log.info("Init Called")
         return True, None
- 

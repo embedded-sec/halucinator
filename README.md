@@ -9,19 +9,12 @@ pip install virtualenv virtualenvwrapper
 
 ## Setup
 
+Full setup instructions with explanations are given in [the documentation](doc/setup.md).
+
 Run the setup.sh script. This will install dependencies, and create a 
 python virtual environment named halucinator.
 
-Tested on Ubuntu 16.04
-```
-setup.sh
-```
-
-Build QEMU used by HALucinator
-```
-cd 
-./build_qemu.sh
-```
+The setup script can be found in `./scripts/setup.sh`.
 
 ## Running
 

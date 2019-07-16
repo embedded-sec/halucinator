@@ -2,24 +2,25 @@
 # (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. 
 # Government retains certain rights in this software.
 
+import IPython
+import threading
 import zmq
 from ..peripheral_models.peripheral_server import encode_zmq_msg, decode_zmq_msg
-from ioserver import IOServer
+from .ioserver import IOServer
 import logging
 
 log = logging.getLogger("UARTServer")
 log.setLevel(logging.DEBUG)
-import threading
-import IPython
 
 
 class VN8200XP(Thread):
     def __init__(self, ioserver):
         self.ioserver = ioserver
-        ioserver.register_topic('Peripheral.UARTPublisher.write', self.write_handler)
+        ioserver.register_topic(
+            'Peripheral.UARTPublisher.write', self.write_handler)
 
     def write_handler(self, ioserver, msg):
-        print(msg,)
+        print((msg,))
         IPython.embed()
 
     def send_data(self, id, chars):
@@ -51,7 +52,7 @@ if __name__ == '__main__':
 
     try:
         while (1):
-            data = raw_input("Data:")
+            data = input("Data:")
             log.debug("Got %s" % str(data))
             if data == '\\n':
                 data = '\n\r'

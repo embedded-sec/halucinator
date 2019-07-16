@@ -1,0 +1,9 @@
+[submodule "deps/avatar-qemu"]
+	path = deps/avatar-qemu
+	url = https://github.com/avatartwo/avatar-qemu.git
+[submodule "deps/avatar2"]
+	path = deps/avatar2
+	url = https://github.com/avatartwo/avatar2.git
+[submodule "deps/keystone"]
+	path = deps/keystone
+	url = https://github.com/keystone-engine/keystone

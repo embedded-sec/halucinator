@@ -1,12 +1,14 @@
 # Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. 
-# Government retains certain rights in this software.
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
+# Government.
 
 
-import peripheral_server
+from . import peripheral_server
 # from peripheral_server import PeripheralServer, peripheral_model
 from collections import deque, defaultdict
-from interrupts import Interrupts
+from .interrupts import Interrupts
 import binascii
 import struct
 import logging
@@ -14,9 +16,11 @@ import time
 log = logging.getLogger("IEEE_802_15_4")
 log.setLevel(logging.DEBUG)
 
-@peripheral_server.peripheral_model  # Register the pub/sub calls and methods that need mapped
+
+# Register the pub/sub calls and methods that need mapped
+@peripheral_server.peripheral_model
 class IEEE802_15_4(object):
-    
+
     IRQ_NAME = '802_15_4_RX_Frame'
     frame_queue = deque()
     calc_crc = True
@@ -41,7 +45,7 @@ class IEEE802_15_4(object):
             Creates the message that Peripheral.tx_msga will send on this 
             event
         '''
-        print "Sending Frame (%i): " % len(frame), binascii.hexlify(frame)  
+        print("Sending Frame (%i): " % len(frame), binascii.hexlify(frame))
         msg = {'frame': frame}
         return msg
 
@@ -68,7 +72,7 @@ class IEEE802_15_4(object):
         if cls.frame_queue > 0:
             log.info("Returning frame")
             frame = cls.frame_queue.popleft()
-            rx_time  = cls.frame_time.popleft()
+            rx_time = cls.frame_time.popleft()
 
         if get_time:
             return frame, rx_time

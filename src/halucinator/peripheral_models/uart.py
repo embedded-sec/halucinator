@@ -1,8 +1,10 @@
 # Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. 
-# Government retains certain rights in this software.
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
+# Government.
 
-import peripheral_server
+from . import peripheral_server
 #from queue import Queue
 from threading import Event, Thread
 from collections import deque, defaultdict
@@ -15,8 +17,8 @@ log = logging.getLogger("UARTModel")
 # log.setLevel(logging.DEBUG)
 
 # Register the pub/sub calls and methods that need mapped
-@peripheral_server.peripheral_model 
-class UARTPublisher(object):  
+@peripheral_server.peripheral_model
+class UARTPublisher(object):
     rx_buffers = defaultdict(deque)
 
     @classmethod
@@ -25,7 +27,7 @@ class UARTPublisher(object):
         '''
            Publishes the data to sub/pub server
         '''
-        log.debug("In: UARTPublisher.write: %s" %chars)
+        log.debug("In: UARTPublisher.write: %s" % chars)
         msg = {'id': uart_id, 'chars': chars}
         return msg
 
@@ -38,20 +40,20 @@ class UARTPublisher(object):
                 count:  Max number of chars to read
                 block(bool): Block if data is not available
         '''
-        log.debug("In: UARTPublisher.read id:%s count:%i, block:%s" % 
-                ( hex(uart_id), count, str(block)))
+        log.debug("In: UARTPublisher.read id:%s count:%i, block:%s" %
+                  (hex(uart_id), count, str(block)))
         while block and (len(cls.rx_buffers[uart_id]) < count):
             pass
         log.debug("Done Blocking: UARTPublisher.read")
         buffer = cls.rx_buffers[uart_id]
         chars_available = len(buffer)
         if chars_available >= count:
-            chars = map(apply, repeat(buffer.popleft, count))
+            chars = list(map(apply, repeat(buffer.popleft, count)))
             chars = ''.join(chars)
         else:
-            chars = map(apply, repeat(buffer.popleft, chars_available))
+            chars = list(map(apply, repeat(buffer.popleft, chars_available)))
             chars = ''.join(chars)
-        
+
         return chars
 
     @classmethod

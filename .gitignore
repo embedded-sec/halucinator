@@ -1,3 +1,9 @@
-*.pyc
-**/tmp/*
+
+*~
+.*.sw*
+*.bak
+
+__pycache__
 *.egg-info
+
+src/build/

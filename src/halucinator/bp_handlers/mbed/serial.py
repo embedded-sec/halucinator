@@ -1,6 +1,8 @@
 # Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. 
-# Government retains certain rights in this software.
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
+# Government.
 
 from ...peripheral_models.uart import UARTPublisher
 from ...peripheral_models.uart import HostStdio
@@ -25,17 +27,17 @@ class MbedUART(BPHandler):
         intercept = True
         return intercept, ord(ret)
 
-    @bp_handler(['_ZN4mbed6Stream4putcEv','_ZN4mbed6Serial5_putcEi'])
+    @bp_handler(['_ZN4mbed6Stream4putcEv', '_ZN4mbed6Serial5_putcEi'])
     def putc(self, qemu, bp_addr):
         param0 = qemu.regs.r0
         param1 = qemu.regs.r1
         log.info("Mbed Putc")
         # TODO: param0 is the 'this'pointer, use it to index the UARTs
         chars = chr(param1)
-        
+
         ret = self.model.write(param0, chars)
         intercept = True
-        return intercept, 1 
+        return intercept, 1
 
     @bp_handler(['_ZN4mbed6Stream4putsEPKc'])
     def puts(self, qemu, bp_addr):
@@ -43,7 +45,7 @@ class MbedUART(BPHandler):
         param0 = qemu.regs.r0
         param1 = qemu.regs.r1
         # TODO: param0 is the 'this'pointer, use it to index the UARTs
-        chars = [] #write is expecting an iterable
+        chars = []  # write is expecting an iterable
         chars.append(qemu.read_memory(param1, 1, 1))
         while chars[-1] != '\x00':
             chars.append(qemu.read_memory(param1, 1, 1))

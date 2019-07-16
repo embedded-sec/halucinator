@@ -3,7 +3,7 @@
 # Government retains certain rights in this software.
 
 
-import peripheral_server
+from . import peripheral_server
 # from queue import Queue
 from threading import Event, Thread
 from collections import deque, defaultdict
@@ -80,10 +80,10 @@ class SPIPublisher(object):
         buffer = cls.rx_buffers[spi_id]
         chars_available = len(buffer)
         if chars_available >= count:
-            chars = map(apply, repeat(buffer.popleft, count))
+            chars = list(map(apply, repeat(buffer.popleft, count)))
             chars = ''.join(chars)
         else:
-            chars = map(apply, repeat(buffer.popleft, chars_available))
+            chars = list(map(apply, repeat(buffer.popleft, chars_available)))
             chars = ''.join(chars)
 
         return chars

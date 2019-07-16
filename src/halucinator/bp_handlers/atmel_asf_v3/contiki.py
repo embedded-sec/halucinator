@@ -1,12 +1,15 @@
 # Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. 
-# Government retains certain rights in this software.
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
+# Government.
 
 from ..bp_handler import BPHandler, bp_handler
 import logging
 import time
 log = logging.getLogger("Contiki")
 # log.setLevel(logging.DEBUG)
+
 
 class Contiki(BPHandler):
 
@@ -19,17 +22,17 @@ class Contiki(BPHandler):
     def register_handler(self, addr, func_name, ticks_per_second=None):
         if ticks_per_second is not None:
             self.ticks_per_second = ticks_per_second
-        return BPHandler.register_handler(self, addr, func_name) 
+        return BPHandler.register_handler(self, addr, func_name)
 
     @bp_handler(['clock_time'])
     def clock_time(self, qemu, bp_addr):
         ticks = time.time() - self.start_time
         ticks = int(ticks * self.ticks_per_second)
-        log.debug("#Ticks: %i" % ticks)     
+        log.debug("#Ticks: %i" % ticks)
         return True, ticks
 
     @bp_handler(['clock_seconds'])
     def clock_seconds(self, qemu, bp_addr):
         secs = int(time.time() - self.start_time)
-        log.debug("#Seconds: %i" % secs)       
+        log.debug("#Seconds: %i" % secs)
         return True, secs

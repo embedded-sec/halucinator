@@ -1,6 +1,8 @@
 # Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. 
-# Government retains certain rights in this software.
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
+# Government.
 
 from ...peripheral_models.tcp_stack import TCPModel
 from ..intercepts import tx_map, rx_map
@@ -18,6 +20,7 @@ log.setLevel(logging.DEBUG)
 WIFI_OFF = 1
 WIFI_IDLE = 2
 WIFI_CONNECTED = 3
+
 
 class STM32F4Wifi(BPHandler):
 
@@ -39,11 +42,12 @@ class STM32F4Wifi(BPHandler):
         # TODO: Pass through to the timer init stuff
         #qemu.regs.pc = qemu.avatar.callables['WiFi_Module_Init']
         log.info("wifi_init called")
-        #return False, None
+        # return False, None
         # Start the TIM1 timer
         wifi_timer_rate = 2
         self.timer.start_timer(self.tim1, 45, wifi_timer_rate)
         return True, 0
+
     @bp_handler(['wifi_wakeup'])
     def wifi_wakeup(self, qemu, bp_addr):
         '''
@@ -134,23 +138,26 @@ class STM32F4Wifi(BPHandler):
                 # We got one!
                 log.info("Wifi: Received %s" % repr(data))
                 RX_DATA_BUF = 0x200f0000
-                # FIXME: It would be nice if we had a better way to do this.  We don't, but that's fine.    
+                # FIXME: It would be nice if we had a better way to do this.  We don't, but that's fine.
                 data += '\0'
-                qemu.write_memory(RX_DATA_BUF, 1, data, len(data), raw=True) # Null-terminate
+                qemu.write_memory(RX_DATA_BUF, 1, data, len(
+                    data), raw=True)  # Null-terminate
                 # Call `ind_wifi_socket_data_received`
-                qemu.regs.r0 = 0 #Socket id
-                qemu.regs.r1 = RX_DATA_BUF # buffer
+                qemu.regs.r0 = 0  # Socket id
+                qemu.regs.r1 = RX_DATA_BUF  # buffer
                 qemu.regs.r2 = len(data)  # length
-                qemu.regs.r3 = len(data)  # Chunk size.  TODO: What is this, even?
+                # Chunk size.  TODO: What is this, even?
+                qemu.regs.r3 = len(data)
                 qemu.regs.pc = qemu.avatar.callables['ind_wifi_socket_data_received']
             elif self.model.conn is None:
                 # The client left!
                 # Call `ind_wifi_socket_server_client_left`
-                log.info("Client left, setting wifi_socket_server_client_left state")
+                log.info(
+                    "Client left, setting wifi_socket_server_client_left state")
                 self.wifi_state = WIFI_IDLE
                 qemu.regs.pc = qemu.avatar.callables['ind_socket_server_client_left']
         else:
             # No callback needed
             return True, 0
         # We are calling something.  Do it.
-        return False, None # So the callback gets taken
+        return False, None  # So the callback gets taken

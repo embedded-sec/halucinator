@@ -1,6 +1,8 @@
 # Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. 
-# Government retains certain rights in this software.
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
+# Government.
 
 from ...peripheral_models.interrupts import Interrupts
 from ...peripheral_models.timer_model import TimerModel
@@ -23,7 +25,7 @@ class STM32_TIM(BPHandler):
         self.org_lr = None
         self.current_channel = 0
         self.addr2isr_lut = {
-            #'0x40000200': 0x32
+            # '0x40000200': 0x32
             0x40000400: 45
         }
         self.irq_rates = {}
@@ -101,7 +103,7 @@ class STM32_TIM(BPHandler):
     def sleep(self, qemu, bp_handler):
         amt = qemu.regs.r0 / 1000.0
         log.debug("sleeping for %f" % amt)
-        #time.sleep(amt)
+        # time.sleep(amt)
         return True, 0
 
     @bp_handler(['HAL_SYSTICK_Config'])
@@ -112,4 +114,3 @@ class STM32_TIM(BPHandler):
         log.info("Setting SysTick rate to %#08x" % rate)
         self.model.start_timer('SysTick', systick_irq, rate)
         return True, 0
-

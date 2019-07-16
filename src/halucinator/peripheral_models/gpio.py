@@ -1,15 +1,17 @@
 # Copyright 2018 National Technology & Engineering Solutions of Sandia, LLC
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. 
-# Government retains certain rights in this software.
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
+# non-exclusive license for use of this work by or on behalf of the U.S.
+# Government. Export of this data may require a license from the United States
+# Government.
 
-from peripheral import requires_tx_map, requires_rx_map, requires_interrupt_map
-import peripheral_server
+from .peripheral import requires_tx_map, requires_rx_map, requires_interrupt_map
+from . import peripheral_server
 from collections import defaultdict
 
 import logging
 log = logging.getLogger("gpio")
 # Register the pub/sub calls and methods that need mapped
-@peripheral_server.peripheral_model  
+@peripheral_server.peripheral_model
 class GPIO(object):
 
     DEFAULT = 0
@@ -50,7 +52,7 @@ class GPIO(object):
             Processes reception of messages from external 0mq server
             type is GPIO.zmq_set_gpio
         '''
-        print "GPIO.ext_pin_change", msg
+        print("GPIO.ext_pin_change", msg)
         gpio_id = msg['id']
         value = msg['value']
         GPIO.gpio_state[gpio_id] = value
@@ -58,5 +60,3 @@ class GPIO(object):
     @classmethod
     def read_pin(cls, pin_id):
         return GPIO.gpio_state[pin_id]
- 
- 
