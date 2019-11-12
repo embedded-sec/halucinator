@@ -1,4 +1,6 @@
-Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# certain rights in this software.
 
 from .peripheral import requires_tx_map, requires_rx_map, requires_interrupt_map
 from . import peripheral_server

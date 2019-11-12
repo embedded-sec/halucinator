@@ -1,4 +1,4 @@
-Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).\n # Under the\n terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights\n # in this software.
 
 from ..intercepts import tx_map, rx_map
 from ..bp_handler import BPHandler, bp_handler

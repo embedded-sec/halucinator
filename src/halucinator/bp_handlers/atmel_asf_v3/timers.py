@@ -1,4 +1,6 @@
-Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# certain rights in this software.
 from ...peripheral_models.interrupts import Interrupts
 from ...peripheral_models.timer_model import TimerModel
 from avatar2.peripherals.avatar_peripheral import AvatarPeripheral
