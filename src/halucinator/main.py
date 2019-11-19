@@ -93,7 +93,7 @@ def write_patch_memory(qemu):
 
 
 def find_qemu():
-    default = "../../3rd_party/avatar-qemu/arm-softmmu/qemu-system-arm"
+    default = "../../deps/avatar2/targets/build/qemu/arm-softmmu/qemu-system-arm"
     real_path = os.path.realpath(os.path.join(
         os.path.dirname(__file__), default))
     if not os.path.exists(real_path):

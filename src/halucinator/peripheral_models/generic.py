@@ -18,7 +18,7 @@ hal_stats.stats['MMIO_addr_pc'] = set()
 class GenericPeripheral(AvatarPeripheral):
     read_addresses = set()
 
-    def hw_read(self, offset, size, pc):
+    def hw_read(self, offset, size, pc=0xBAADBAAD):
         log.info("%s: Read from addr, 0x%08x size %i, pc: %s" %
                  (self.name, self.address + offset, size, hex(pc)))
         addr = self.address + offset
@@ -30,7 +30,7 @@ class GenericPeripheral(AvatarPeripheral):
         ret = 0
         return ret
 
-    def hw_write(self, offset, size, value, pc):
+    def hw_write(self, offset, size, value, pc=0xBAADBAAD):
         log.info("%s: Write to addr: 0x%08x, size: %i, value: 0x%08x, pc %s" % (
             self.name, self.address + offset, size, value, hex(pc)))
         addr = self.address + offset
@@ -54,7 +54,7 @@ class HaltPeripheral(AvatarPeripheral):
         Just halts on first address read/written
     '''
 
-    def hw_read(self, offset, size, pc):
+    def hw_read(self, offset, size, pc=0xBAADBAAD):
         addr = self.address + offset
         log.info("%s: Read from addr, 0x%08x size %i, pc: %s" %
                  (self.name, addr, size, hex(pc)))

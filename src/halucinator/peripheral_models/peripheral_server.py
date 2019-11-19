@@ -36,7 +36,7 @@ def peripheral_model(cls):
         __rx_handlers__[key] = (cls, m)
         if __rx_socket__ != None:
             log.info("Subscribing to: %s" % key)
-            __rx_socket__.setsockopt(zmq.SUBSCRIBE, key)
+            __rx_socket__.setsockopt(zmq.SUBSCRIBE, bytes(key))
 
     return cls
 
@@ -57,7 +57,7 @@ def tx_msg(funct):
         topic = "Peripheral.%s.%s" % (model_cls.__name__, funct.__name__)
         msg = encode_zmq_msg(topic, data)
         log.info("Sending: %s" % msg)
-        __tx_socket__.send(msg)
+        __tx_socket__.send_string(msg)
     return tx_msg_decorator
 
 
@@ -103,7 +103,7 @@ def start(rx_port=5555, tx_port=5556, qemu=None):
 
     for topic in list(__rx_handlers__.keys()):
         log.info("Subscribing to: %s" % topic)
-        __rx_socket__.setsockopt(zmq.SUBSCRIBE, topic)
+        __rx_socket__.setsockopt_string(zmq.SUBSCRIBE, topic)
 
     # Setup Publisher
     __tx_socket__ = __tx_context__.socket(zmq.PUB)
@@ -125,14 +125,14 @@ def run_server():
     global __qemu
 
     __stop_server = False
-    __rx_socket__.setsockopt(zmq.SUBSCRIBE, '')
+    __rx_socket__.setsockopt(zmq.SUBSCRIBE, b'')
 
     poller = zmq.Poller()
     poller.register(__rx_socket__, zmq.POLLIN)
     while(not __stop_server):
         socks = dict(poller.poll(1000))
         if __rx_socket__ in socks and socks[__rx_socket__] == zmq.POLLIN:
-            string = __rx_socket__.recv()
+            string = __rx_socket__.recv_string()
             topic, msg = decode_zmq_msg(string)
             log.info("Got message: Topic %s  Msg: %s" % (str(topic), str(msg)))
 

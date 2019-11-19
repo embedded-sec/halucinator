@@ -1,26 +1,20 @@
 # HALucinator - Firmware rehosting through abstraction layer modeling.
 
-## Prerequisites
-
-```
-apt install pkg-config build-essential zlib1g-dev pkg-config libglib2.0-dev binutils-dev libboost-all-dev autoconf libtool libssl-dev libpixman-1-dev libpython-dev python-pip python-capstone virtualenv gcc-arm-none-eabi
-pip install virtualenv virtualenvwrapper
-```
 
 ## Setup
 
-Full setup instructions with explanations are given in [the documentation](doc/setup.md).
+Note:  This has only been tested on Ubuntu 16.04.
 
-Run the setup.sh script. This will install dependencies, and create a 
-python virtual environment named halucinator.
-
-The setup script can be found in `./scripts/setup.sh`.
+1.  Install dependencies and create the `halucinator` virtual environment using the
+`create_venv.sh` script.
+2. Activate the virtual environment: `source ~/.virtualenv/halucinator/bin/activate`
+3. Run `setup.sh` script in the root directory. This will install dependencies, get avatar and build the needed version of qemu. 
 
 ## Running
 
 Running Halucinator requires a configuration file that lists the functions to 
 intercept and the handler to be called on that interception. It also requires
-and address file linking addresses to function names, and a memory file that 
+an address file linking addresses to function names, and a memory file that 
 describes the memory layout of the system being emulated.  The firmware file is 
 specified in the memory file.
 
@@ -40,7 +34,7 @@ This has already been done for Uart example file below.
 A tool to convert the STM's Software Workbench for STM (SW4STM) was developed to
 enable compiling their IDE projects using make.
 This has only been tested on a few STM32F4 examples from STM32Cube_F4_V1.21.0.
-It compile them as cortex-m3 devices and not cortex-m4 to enable easier 
+It compiles them as cortex-m3 devices and not cortex-m4 to enable easier 
 emulation in QEMU. 
 
 To use go into the directory below the SW4STM32 directory in the project and run
@@ -64,7 +58,9 @@ make all
 To give an idea how to use Halucinator an example is provided in `test/STM32/example`.
 
 #### Setup
-Note: This was done prior and the files are in the repo in `test/STM/example`.
+Note: This was done prior and the files are in the repo in `test/STM/example`. 
+If you just want to run the example without building it just go to Running below.
+
 This procedure should be followed for other binaries.
 In list below after the colon (:) denotes the file/cmd .  
 
@@ -78,7 +74,7 @@ In list below after the colon (:) denotes the file/cmd .
 
 Note: the Memory file can be created using `src/halucinator/util/elf_sym_hal_getter.py` 
 from an elf with symbols.  This requires angr and pyyaml.
-This was used to create `Uart_Hyperterminal_IT_O0_addrs`
+This was used to create `Uart_Hyperterminal_IT_O0_addrs.yaml`
 
 
 #### Running
@@ -97,7 +93,7 @@ In separate terminal start halucinator with the firmware.
 ```bash
 workon halucinator
 <halucinator_repo_root>$./halucinator -c=test/STM32/example/Uart_Hyperterminal_IT_O0_config.yaml \
-  -a=test/STM32/example/Uart_Hyperterminal_IT_O0_addr.yaml \
+  -a=test/STM32/example/Uart_Hyperterminal_IT_O0_addrs.yaml \
   -m=test/STM32/example/Uart_Hyperterminal_IT_O0_memory.yaml --log_blocks -n Uart_Example
 
 or
@@ -127,7 +123,7 @@ INFO:STM32F4UART:Writing:
 #### Stopping
 
 Avatar creates many threads and std input gets sent to QEMU thus killing it is not trivial. 
-I usually have to kill it with `ctrl-z` and `kill %`
+I usually have to kill it with `ctrl-z` and `kill %`, or `killall -9 halucinator`
 
 Logs are kept in the `<directory of the config file>/tmp/<value of -n option`. e.g `test/STM32/example/tmp/Uart_Example/`
 

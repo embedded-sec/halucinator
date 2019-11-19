@@ -1,34 +1,37 @@
 #!/bin/bash
-. /etc/bash_completion
+# . /etc/bash_completion
+# set -e 
+set -x
 
-sudo apt install -y ethtool python-tk gdb-arm-none-eabi
-mkvirtualenv halucinator
-workon halucinator
-#git submodule update --init
+# If avatar already cloned just pull
+if pushd deps/avatar2; then
+    git pull
+    popd
+else
+    git clone  "$AVATAR_REPO" deps/avatar2    
+fi
 
-#Need to upstream my changes
-git clone https://github.com/avatartwo/avatar2.git 3rd_party/avatar2
+# keystone-engine is a dependency of avatar, but pip install doesn't build
+# the shared library. So build if from the repo
+pip install --no-cache-dir --no-binary keystone-engine keystone-engine
 
-pip install -e 3rd_party/avatar2
 
-# Avatar broke emulate capability which halucinator uses,
+pip install -e deps/avatar2
+
+# Avatar broke memory emulate capability which halucinator uses,
 # Use old commit until fixed
-pushd 3rd_party/avatar2
-git checkout c43d08f10b8fdc662d0cc66e4b3bd2d272c8c9ba
+pushd deps/avatar2
+git checkout "$AVATAR_COMMIT"
+
+#Get submodules of avatar and build qemu
+git submodule update --init --recursive
+pushd targets
+./build_qemu.sh
+#./build_panda.sh
+popd
 popd
 
+# Install halucinator dependencies
 pip install -r src/requirements.txt
 pip install -e src
 
-echo "If you haven't already build avatar-qemu you will need to do so"
-echo "   cd 3rd_party"
-echo "   ./build_qemu.sh"
-
-
-# May also need to install angr
-
-# git clone https://github.com/angr/angr-dev.git
-# cd angr-dev
-# ./setup.sh -i -e angr
-# workon angr
-# pip install pyyaml

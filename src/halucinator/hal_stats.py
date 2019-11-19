@@ -22,5 +22,5 @@ def write_on_update(set_key, value):
     if value not in stats[set_key]:
         stats[set_key].add(value)
         stats[set_key+'_length'] = len(stats[set_key])
-        with open(_stats_file, 'wb') as outfile:
+        with open(_stats_file, 'w') as outfile:
             yaml.safe_dump(stats, outfile)
