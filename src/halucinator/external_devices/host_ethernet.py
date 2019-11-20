@@ -32,7 +32,7 @@ def rx_from_emulator(emu_rx_port, interface):
     mq_socket.setsockopt(zmq.SUBSCRIBE, topic)
 
     while (__run_server):
-        msg = mq_socket.recv()
+        msg = mq_socket.recv_string()
         # print "Got from emulator:", msg
         topic, data = decode_zmq_msg(msg)
         frame = data['frame']
@@ -59,7 +59,7 @@ def rx_from_host(emu_tx_port, msg_id):
         frame = __host_socket.recv(2048)
         data = {'interface_id': msg_id, 'frame': frame}
         msg = encode_zmq_msg(topic, data)
-        to_emu_socket.send(msg)
+        to_emu_socket.send_string(msg)
         print("Sent message to emulator ", binascii.hexlify(frame))
 
 

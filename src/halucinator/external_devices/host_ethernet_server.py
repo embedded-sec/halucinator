@@ -1,8 +1,6 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, there is a
-# non-exclusive license for use of this work by or on behalf of the U.S.
-# Government. Export of this data may require a license from the United States
-# Government.
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# certain rights in this software.
 
 from os import sys, path
 import zmq
@@ -42,7 +40,7 @@ class IOServer(Thread):
 
     def run(self):
         while not self.__stop.is_set():
-            msg = self.rx_socket.recv()
+            msg = self.rx_socket.recv_string()
             log.debug("Received: %s" % str(msg))
             topic, data = decode_zmq_msg(msg)
             if self.packet_log:
@@ -60,7 +58,7 @@ class IOServer(Thread):
 
     def send_msg(self, topic, data):
         msg = encode_zmq_msg(topic, data)
-        self.tx_socket.send(msg)
+        self.tx_socket.send_string(msg)
         if self.packet_log:
             # TODO, make logging more generic so will work for non-frames
             if 'frame' in data:

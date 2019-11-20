@@ -1,9 +1,10 @@
 #!/bin/bash
 # . /etc/bash_completion
-# set -e 
+set -e 
 
+AVATAR_REPO=https://github.com/avatartwo/avatar2.git
 AVATAR_COMMIT=c43d08f10b8fdc662d0cc66e4b3bd2d272c8c9ba
-set -x
+
 
 # If avatar already cloned just pull
 if pushd deps/avatar2; then

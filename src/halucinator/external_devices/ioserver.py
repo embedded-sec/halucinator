@@ -46,7 +46,7 @@ class IOServer(Thread):
         while not self.__stop.is_set():
             socks = dict(self.poller.poll(1000))
             if self.rx_socket in socks and socks[self.rx_socket] == zmq.POLLIN:
-                msg = self.rx_socket.recv()
+                msg = self.rx_socket.recv_string()
                 log.debug("Received: %s" % str(msg))
                 topic, data = decode_zmq_msg(msg)
                 if self.packet_log:
@@ -65,7 +65,7 @@ class IOServer(Thread):
 
     def send_msg(self, topic, data):
         msg = encode_zmq_msg(topic, data)
-        self.tx_socket.send(msg)
+        self.tx_socket.send_string(msg)
         if self.packet_log:
             # TODO, make logging more generic so will work for non-frames
             if 'frame' in data:

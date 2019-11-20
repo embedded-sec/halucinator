@@ -46,11 +46,11 @@ class UARTPublisher(object):
         buffer = cls.rx_buffers[uart_id]
         chars_available = len(buffer)
         if chars_available >= count:
-            chars = list(map(apply, repeat(buffer.popleft, count)))
-            chars = ''.join(chars)
+            chars = [buffer.popleft() for _ in range(count)]
+            chars = ''.join(chars).encode('utf-8')
         else:
-            chars = list(map(apply, repeat(buffer.popleft, chars_available)))
-            chars = ''.join(chars)
+            chars = [buffer.popleft() for _ in range(chars_available)]
+            chars = ''.join(chars).encode('utf-8')
 
         return chars
 

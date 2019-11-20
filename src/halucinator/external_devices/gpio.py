@@ -30,7 +30,7 @@ def rx_from_emulator(emu_rx_port):
 
     print("Setup GPIO Listener")
     while (__run_server):
-        msg = mq_socket.recv()
+        msg = mq_socket.recv_string()
         print("Got from emulator:", msg)
         topic, data = decode_zmq_msg(msg)
         print("Pin: ", data['id'], "Value", data['value'])
