@@ -38,7 +38,7 @@ It compiles them as cortex-m3 devices and not cortex-m4 to enable easier
 emulation in QEMU. 
 
 To use go into the directory below the SW4STM32 directory in the project and run
-`<halucinator_repo_root>/src/tools/stm_tools/build_scripts/CubeMX2Makefile.py .`
+`python3 <halucinator_repo_root>/src/tools/stm_tools/build_scripts/CubeMX2Makefile.py .`
 Enter a name for the board, and the applications. Then run `make all`.
 The binary created will be in `bin` directory
 
@@ -46,7 +46,7 @@ Example
 
 ```bash
 cd STM32Cube_FW_F4_V1.21.0/Projects/STM32469I_EVAL/Examples/UART/UART_HyperTerminal_IT/SW4STM32/STM32469I_EVAL
-<halucinator_repo_root>/src/tools/stm_tools/build_scripts/CubeMX2Makefile.py .
+python3 <halucinator_repo_root>/src/tools/stm_tools/build_scripts/CubeMX2Makefile.py .
 Board: STM32469I_Eval
 APP: Uart_IT
 make all
@@ -73,8 +73,19 @@ In list below after the colon (:) denotes the file/cmd .
 7. (Optional) create shell script to run it: `run.sh`
 
 Note: the Memory file can be created using `src/halucinator/util/elf_sym_hal_getter.py` 
-from an elf with symbols.  This requires angr and pyyaml.
+from an elf with symbols.  This requires installing angr in halucinator's virtual environment.
 This was used to create `Uart_Hyperterminal_IT_O0_addrs.yaml`
+
+To use it the first time you would. Install angr
+```
+source ~/.virtualenvs/halucinator/bin/activate
+pip install angr
+```
+
+Then run it as a module in halucinator
+```
+python -m halucinator.util.elf_sym_hal_getter -b <path to elf file>
+```
 
 
 #### Running

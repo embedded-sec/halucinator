@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #  File was modified to automatically fix case of files
 # Modified from https://github.com/baoshi/CubeMX2Makefile
 
@@ -139,13 +139,13 @@ def fix_path_caps(filename, path):
 
 def get_project_name():
     if os.path.exists(BUILD_INFO_FILE):
-        with open(BUILD_INFO_FILE, 'rb') as info_file:
+        with open(BUILD_INFO_FILE, 'r') as info_file:
             info = json.load(info_file)
     else:
         info = {}
         info['BOARD'] = input("Board: ")
         info['APP'] = input("APP: ")
-        with open(BUILD_INFO_FILE, 'wb') as info_file:
+        with open(BUILD_INFO_FILE, 'w') as info_file:
             json.dump(info, info_file)
 
     project_name = info['APP'] + '--board=' + info['BOARD']
@@ -175,7 +175,7 @@ def main():
 
     template_file_path = os.path.join(app_folder_path, 'CubeMX2Makefile.tpl')
     try:
-        with open(template_file_path, 'rb') as f:
+        with open(template_file_path, 'r') as f:
             makefile_template = string.Template(f.read())
     except EnvironmentError as e:
         sys.stderr.write("Unable to read template file: {}. Error: {}".format(
@@ -383,7 +383,7 @@ def main():
 
     makefile_path = os.path.join(proj_folder_path, 'Makefile')
     try:
-        with open(makefile_path, 'wb') as f:
+        with open(makefile_path, 'w') as f:
             f.write(makefile_str)
     except EnvironmentError as e:
         sys.stderr.write(
