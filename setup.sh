@@ -1,6 +1,8 @@
 #!/bin/bash
 # . /etc/bash_completion
 # set -e 
+
+AVATAR_COMMIT=c43d08f10b8fdc662d0cc66e4b3bd2d272c8c9ba
 set -x
 
 # If avatar already cloned just pull
@@ -16,15 +18,18 @@ fi
 pip install --no-cache-dir --no-binary keystone-engine keystone-engine
 
 
-pip install -e deps/avatar2
+
 
 # Avatar broke memory emulate capability which halucinator uses,
 # Use old commit until fixed
 pushd deps/avatar2
 git checkout "$AVATAR_COMMIT"
+pip install -e .
 
 #Get submodules of avatar and build qemu
 git submodule update --init --recursive
+
+
 pushd targets
 ./build_qemu.sh
 #./build_panda.sh

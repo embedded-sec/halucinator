@@ -8,7 +8,7 @@ VIRT_ENV="halucinator"
 AVATAR_REPO=https://github.com/avatartwo/avatar2.git
 # Avatar broke emulated memory capability which halucinator requires,
 # Use old commit until fixed
-AVATAR_COMMIT=c43d08f10b8fdc662d0cc66e4b3bd2d272c8c9ba
+
 CREATE_VIRT_ENV=true
 
 
