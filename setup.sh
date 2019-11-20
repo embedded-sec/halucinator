@@ -17,7 +17,8 @@ fi
 # the shared library. So build if from the repo
 pip install --no-cache-dir --no-binary keystone-engine keystone-engine
 
-
+#Get submodules of avatar and build qemu
+git submodule update --init --recursive
 
 
 # Avatar broke memory emulate capability which halucinator uses,
@@ -25,10 +26,6 @@ pip install --no-cache-dir --no-binary keystone-engine keystone-engine
 pushd deps/avatar2
 git checkout "$AVATAR_COMMIT"
 pip install -e .
-
-#Get submodules of avatar and build qemu
-git submodule update --init --recursive
-
 
 pushd targets
 ./build_qemu.sh
