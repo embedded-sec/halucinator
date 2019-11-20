@@ -18,7 +18,7 @@ class UARTPrintServer(object):
             'Peripheral.UARTPublisher.write', self.write_handler)
 
     def write_handler(self, ioserver, msg):
-        print(msg, end=' ')
+        print(msg, end=' ', flush=True)
 
     def send_data(self, id, chars):
         d = {'id': id, 'chars': chars}
