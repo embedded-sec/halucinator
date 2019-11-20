@@ -1,3 +1,0 @@
-[submodule "deps/keystone"]
-	path = deps/keystone
-	url = https://github.com/keystone-engine/keystone
