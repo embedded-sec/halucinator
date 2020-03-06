@@ -3,7 +3,7 @@
 
 ## Setup
 
-Note:  This has only been tested on Ubuntu 16.04.
+Note:  This has been lightly tested on Ubuntu 16.04, and 18.04
 
 1.  Install dependencies and create the `halucinator` virtual environment using the
 `create_venv.sh` script.

@@ -138,7 +138,7 @@ def get_qemu_target(name, entry_addr, firmware=None, log_basic_blocks=False,
     print(("GDB_PORT", gdb_port))
     log.critical("Using qemu in %s" % qemu_path)
     qemu = avatar.add_target(QemuTarget,
-                             gdb_executable="arm-none-eabi-gdb",
+                             gdb_executable="gdb-multiarch",
                              gdb_port=gdb_port,
                              qmp_port=gdb_port+1,
                              firmware=firmware,
@@ -375,7 +375,7 @@ def override_addresses(config, address_file):
     return base_addr, entry_addr
 
 
-if __name__ == '__main__':
+def main():
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('-c', '--config', required=True,
@@ -429,3 +429,7 @@ if __name__ == '__main__':
     emulate_binary(config, base_dir, args.name, args.log_blocks,
                    args.rx_port, args.tx_port,
                    elf_file=args.elf, gdb_port=args.gdb_port)
+
+
+if __name__ == '__main__':
+    main()
