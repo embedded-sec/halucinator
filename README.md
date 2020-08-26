@@ -10,32 +10,36 @@ Note:  This has been lightly tested on Ubuntu 16.04, and 18.04
     ```
        mkvirtualenv -p `which python3` halucinator
     ```
-    if (halucinator) is not in your prompt use workon halucinator
+    If (halucinator) is not in your prompt use `workon halucinator`
 3.  Install Halucinator 
     ```
     pip install -r src/requirements.txt
     pip install -e src
     ```
 4. Install Avatar's QEMU and GDB (Select avatar-qemu and gdb-arm)
-```
-python -m avatar2.installer
-```
+   ```
+   python -m avatar2.installer
+   ```
+   This step will take a while the first time
 5. Set environmental variable for HALUCINATOR_QEMU
   ```
     export HALUCINATOR_QEMU=`readlink -f ~/.avatar2/avatar-qemu/arm-softmmu/qemu-system-arm`
   ```
+### Note on setting HALUCINATOR_QEMU
 
-Note on setting `HALUCINATOR_QEMU` if you use virtualenvwrapper as above you 
+If you use virtualenvwrapper as above you 
 can set it up to be automatically set and removed when activating/deactivating
-the virtual environment using the postactivate and predeactivate scripts.
+the virtual environment using the postactivate and predeactivate scripts below.
   
 Contents of $VIRTUAL_ENV/bin/postactivate
-```
+
+```sh
 export HALUCINATOR_QEMU=<full path to your qemu>
 ```
 
 Contents of $VIRTUAL_ENV/bin/predeactivate
-```
+
+```sh
 unset HALUCINATOR_QEMU
 ```
 
@@ -48,9 +52,10 @@ describes the memory layout, an intercept file that describes what to intercept
 and a symbol/address file that maps addresses to symbol names.  See the Config 
 File section below for full details
 
-```
-workon halucinator
-./halucinator  -c=<memory_file.yaml> -c=<intercept_file.yaml> -c=<address_file.yaml>
+All of these commands assume you are in your halucinator virtual environment
+
+```sh
+halucinator  -c=<memory_file.yaml> -c=<intercept_file.yaml> -c=<address_file.yaml>
 ```
 
 ## Running an Example
@@ -87,7 +92,7 @@ To give an idea how to use Halucinator an example is provided in `test/STM32/exa
 
 #### Setup
 Note: This was done prior and the files are in the repo in `test/STM/example`. 
-If you just want to run the example without building it just go to Running below.
+If you just want to run the example without building it just go to Running UART Example below.
 
 This procedure should be followed for other binaries.
 In list below after the colon (:) denotes the file/cmd .  
@@ -97,45 +102,39 @@ In list below after the colon (:) denotes the file/cmd .
 3. Create binary file: `<halucinator_repo_root>/src/tools/make_bin.sh Uart_Hyperterminal_IT_O0.elf` creates `Uart_Hyperterminal_IT_O0.elf.bin`
 4. Create Memory Layout (specifies memory map of chip): `Uart_Hyperterminal_IT_O0_memory.yaml`
 5. Create Address File (maps function names to address): `Uart_Hyperterminal_IT_O0_addrs.yaml`
-6. Create Config File (defines functions to intercept and what handler to use for it): `Uart_Hyperterminal_IT_O0_config.yaml`
+6. Create Intercept File (defines functions to intercept and what handler to use for it): `Uart_Hyperterminal_IT_O0_config.yaml`
 7. (Optional) create shell script to run it: `run.sh`
 
-Note: Symbols used int address file can be created from and elf file with symbols
+Note: Symbols used in the address file can be created from an elf file with symbols
 using `hal_make_addrs` This requires installing angr in halucinator's virtual environment.
 This was used to create `Uart_Hyperterminal_IT_O0_addrs.yaml`
 
 To use it the first time you would. Install angr (e.g. `pip install angr` from
 the halucinator virtual environment)
 
-
-Then run it as a module in halucinator
-```
+```sh
 hal_make_addrs -b <path to elf file>
 ```
 
+#### Running UART Example
 
-#### Running
-
-Start the UART Peripheral device,  this a script that will subscribe to the Uart on the peripheral server and
-enable interacting with it.
+Start the UART Peripheral device,  this a script that will subscribe to the Uart 
+on the peripheral server and enable interacting with it.
 
 ```bash
-workon halucinator
 hal_dev_uart -i=1073811456
-
 ```
 
 In separate terminal start halucinator with the firmware.
 
 ```bash
-workon halucinator
 
 <halucinator_repo_root>$ halucinator -c=test/STM32/example/Uart_Hyperterminal_IT_O0_config.yaml \
   -c=test/STM32/example/Uart_Hyperterminal_IT_O0_addrs.yaml \
   -c=test/STM32/example/Uart_Hyperterminal_IT_O0_memory.yaml --log_blocks -n Uart_Example
 
 or
-<halucinator_repo_root>& test/STM32/example/run.sh 
+<halucinator_repo_root>& test/STM32/example/run.sh
 ```
 Note the --log_blocks and -n are optional.
 
@@ -145,22 +144,16 @@ You will eventually see in both terminals messages containing
  Enter 10 characters using keyboard :
 ```
 
-Enter 10 Characters in the first terminal running the uart external device and press enter
-should then see below in halucinator terminal
-```
-INFO:STM32F4UART:Waiting for data: 10
-INFO:STM32F4UART:Got Data: 1342154134
-INFO:STM32F4UART:Get State
-INFO:STM32F4UART:Writing: 1342154134
-INFO:STM32F4UART:Get State
-INFO:STM32F4UART:Writing:
- Example Finished
+Enter 10 Characters in the first terminal running `hal_dev_uart` press enter
+should then see text echoed followed.
 
+```txt
+ Example Finished
 ```
 
 #### Stopping
 
-Press `ctrl-c`. Ff for some reason this doesn't work kill it with `ctrl-z` 
+Press `ctrl-c`. If for some reason this doesn't work kill it with `ctrl-z` 
 and `kill %`, or `killall -9 halucinator`
 
 Logs are kept in the `tmp/<value of -n option>`. e.g `tmp/Uart_Example/`
