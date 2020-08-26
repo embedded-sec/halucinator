@@ -11,8 +11,7 @@ from ..peripheral_models.peripheral_server import encode_zmq_msg, decode_zmq_msg
 from threading import Thread, Event
 import binascii
 import logging
-log = logging.getLogger("IOServer")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class IOServer(Thread):

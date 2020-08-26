@@ -14,13 +14,19 @@ from ..bp_handler import BPHandler, bp_handler
 class Counter(BPHandler):
     '''
         Returns an increasing value for each addresss accessed
+
+        Halucinator configuration usage:
+        - class: halucinator.bp_handlers.Counter
+          function: <func_name> (Can be anything)
+          addr: <addr>
+          registration_args:{increment:1} (Optional)
     '''
 
     def __init__(self):
         self.increment = {}
         self.counts = {}
 
-    def register_handler(self, addr, func_name, increment=1):
+    def register_handler(self, qemu, addr, func_name, increment=1):
         '''
 
         '''

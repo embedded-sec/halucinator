@@ -12,8 +12,8 @@ import binascii
 import os
 import logging
 import time
-log = logging.getLogger("RF233")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 # SPI Addresses
 RF233_REG_IRQ_STATUS = 0x0F

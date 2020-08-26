@@ -6,8 +6,7 @@ from avatar2.peripherals.avatar_peripheral import AvatarPeripheral
 from .. import hal_stats as hal_stats
 import logging
 
-log = logging.getLogger("GenericPeripheral")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 hal_stats.stats['MMIO_read_addresses'] = set()
 hal_stats.stats['MMIO_write_addresses'] = set()

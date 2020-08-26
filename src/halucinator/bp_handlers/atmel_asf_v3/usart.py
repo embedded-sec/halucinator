@@ -7,8 +7,8 @@ from ..bp_handler import BPHandler, bp_handler
 import struct
 import logging
 import binascii
-log = logging.getLogger("SAMR21-USART")
-log.setLevel(logging.DEBUG)
+
+log = logging.getLogger(__name__)
 
 
 class USART(BPHandler):

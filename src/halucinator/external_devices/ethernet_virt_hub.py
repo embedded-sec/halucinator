@@ -11,8 +11,7 @@ import socket
 import scapy.all as scapy
 import os
 
-log = logging.getLogger("ViruatalEthHub")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class HostEthernetServer(Thread):

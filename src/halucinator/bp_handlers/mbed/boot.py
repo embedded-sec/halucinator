@@ -4,8 +4,7 @@
 
 from ..bp_handler import BPHandler, bp_handler
 import logging
-log = logging.getLogger("MbedBoot")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class MbedBoot(BPHandler):

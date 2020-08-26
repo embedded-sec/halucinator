@@ -11,7 +11,7 @@ import binascii
 import struct
 import logging
 import time
-log = logging.getLogger("EthernetModel")
+log = logging.getLogger(__name__)
 # log.setLevel(logging.DEBUG)
 
 

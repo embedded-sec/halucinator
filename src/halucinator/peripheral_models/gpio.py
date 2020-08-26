@@ -7,7 +7,7 @@ from . import peripheral_server
 from collections import defaultdict
 
 import logging
-log = logging.getLogger("gpio")
+log = logging.getLogger(__name__)
 # Register the pub/sub calls and methods that need mapped
 @peripheral_server.peripheral_model
 class GPIO(object):

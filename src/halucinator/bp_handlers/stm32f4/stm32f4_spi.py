@@ -6,8 +6,7 @@ from ...peripheral_models.spi import SPIPublisher
 from ..bp_handler import BPHandler, bp_handler
 import logging
 
-log = logging.getLogger("STM32F4SPI")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 # TODO: Callbacks
 

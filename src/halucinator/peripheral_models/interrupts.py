@@ -5,7 +5,7 @@
 from . import peripheral_server
 from collections import deque, defaultdict
 import logging
-log = logging.getLogger("Interrupts")
+log = logging.getLogger(__name__)
 # log.setLevel(logging.DEBUG)
 
 

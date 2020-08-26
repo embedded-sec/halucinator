@@ -28,7 +28,7 @@ def bp_handler(arg):
 
 class BPHandler(object):
 
-    def register_handler(self, addr, func_name):
+    def register_handler(self, qemu, addr, func_name):
         canidate_methods = [getattr(self.__class__, x) for x in dir(
             self.__class__) if hasattr(getattr(self.__class__, x), 'bp_func_list')]
         for canidate in canidate_methods:

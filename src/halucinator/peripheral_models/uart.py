@@ -11,7 +11,7 @@ import logging
 from itertools import repeat
 import time
 
-log = logging.getLogger("UARTModel")
+log = logging.getLogger(__name__)
 # log.setLevel(logging.DEBUG)
 
 # Register the pub/sub calls and methods that need mapped
@@ -25,7 +25,7 @@ class UARTPublisher(object):
         '''
            Publishes the data to sub/pub server
         '''
-        log.debug("In: UARTPublisher.write: %s" % chars)
+        log.info("Writing: %s" % chars)
         msg = {'id': uart_id, 'chars': chars}
         return msg
 
@@ -52,7 +52,40 @@ class UARTPublisher(object):
             chars = [buffer.popleft() for _ in range(chars_available)]
             chars = ''.join(chars).encode('utf-8')
 
+        log.info("Reading %s"% chars)
         return chars
+
+    @classmethod
+    def read_line(cls, uart_id, count=1, block=False):
+        '''
+            Gets data previously received from the sub/pub server
+            Args:
+                uart_id:   A unique id for the uart
+                count:  Max number of chars to read
+                block(bool): Block if data is not available
+        '''
+        log.debug("In: UARTPublisher.read id:%s count:%i, block:%s" %
+                  (hex(uart_id), count, str(block)))
+        while block and (len(cls.rx_buffers[uart_id]) < count) :
+            if len(cls.rx_buffers[uart_id]) > 0:
+                if cls.rx_buffers[uart_id][-1] == '\n':
+                    break
+
+        log.debug("Done Blocking: UARTPublisher.read")
+        log.debug("rx_buffers %s" % cls.rx_buffers[uart_id])
+        buffer = cls.rx_buffers[uart_id]
+        chars_available = len(buffer)
+        if chars_available >= count:
+            #chars = list(map(apply, repeat(buffer.popleft, count)))
+            chars = [buffer.popleft() for _ in range(count)]
+            chars = ''.join(chars).encode('utf-8')
+        else:
+            chars = [buffer.popleft() for _ in range(chars_available)]
+            chars = ''.join(chars).encode('utf-8')
+
+        log.info("Reading %s"% chars)
+        return chars
+
 
     @classmethod
     @peripheral_server.reg_rx_handler

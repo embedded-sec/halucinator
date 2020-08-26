@@ -13,8 +13,8 @@ import binascii
 import os
 import logging
 import time
-log = logging.getLogger("EthernetSmartConnect")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 
 class EthernetSmartConnect(BPHandler):

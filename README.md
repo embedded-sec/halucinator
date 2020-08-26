@@ -104,8 +104,8 @@ In separate terminal start halucinator with the firmware.
 ```bash
 workon halucinator
 <halucinator_repo_root>$./halucinator -c=test/STM32/example/Uart_Hyperterminal_IT_O0_config.yaml \
-  -a=test/STM32/example/Uart_Hyperterminal_IT_O0_addrs.yaml \
-  -m=test/STM32/example/Uart_Hyperterminal_IT_O0_memory.yaml --log_blocks -n Uart_Example
+  -c=test/STM32/example/Uart_Hyperterminal_IT_O0_addrs.yaml \
+  -c=test/STM32/example/Uart_Hyperterminal_IT_O0_memory.yaml --log_blocks -n Uart_Example
 
 or
 <halucinator_repo_root>$test/STM32/example/run.sh 
@@ -136,7 +136,68 @@ INFO:STM32F4UART:Writing:
 Avatar creates many threads and std input gets sent to QEMU thus killing it is not trivial. 
 I usually have to kill it with `ctrl-z` and `kill %`, or `killall -9 halucinator`
 
-Logs are kept in the `<directory of the config file>/tmp/<value of -n option`. e.g `test/STM32/example/tmp/Uart_Example/`
+Logs are kept in the `tmp/<value of -n option>`. e.g `tmp/Uart_Example/`
 
-## TODOs
-Document what is in config file, address files, and memory files
+## Config file
+
+How the emulation is performed is controlled by a yaml config file.  It is passed 
+in using a the -c flag, which can be repeated with the config file being appended
+and the later files overwriting any collisions from previous file.  The config 
+is specified as follows.  Default field values are in () and types are in <>
+
+```yaml
+machine:   # Optional, describes qemu machine used in avatar entry optional defaults in ()
+           # if never specified default settings as below are used. 
+  arch: (cortex-m3)<str>,
+  cpu_model: (cortex-m3)<str>,
+  entry_addr: (None)<int>,  # Initial value to pc reg. Obtained from 0x0000_0004
+                        # of memory named init_mem if it exists else memory
+                        # named flash
+  init_sp: (None)<int>,     # Initial value for sp reg, Obtained from 0x0000_0000
+                        # of memory named init_mem if it exists else memory
+                        # named flash
+  gdb_exe: ('arm-none-eabi-gdb')<path> # Path to gdb to use
+
+
+memories:  #List of the memories to add to the machine
+  - name: <str>,       # Required
+    base_addr:  <int>, # Required
+    size: <int>,       # Required
+    perimissions: (rwx)<r--|rw-|r-x>, # Optional 
+    file: filename<path>   # Optional Filename to populate memory with, use full path or
+                      # path relative to this config file, blank memory used if not specified
+    emulate: class<AvatarPeripheral subclass>    # Class to emulate memory 
+
+peripherals:  # Optional, A list of memories, except emulate field required
+
+intercepts:  # Optional, list of intercepts to places
+  - class:  <BPHandler subclass>,  # Required use full import path
+    function: <str>     # Required: Function name in @bp_handler([]) used to
+                        #   determine class method used to handle this intercept
+    addr: (from symbols)<int>  # Optional, Address of where to place this intercept,
+                               # generally recommend not setting this value, but
+                               # instead setting symbol and adding entry to
+                               # symbols for this makes config files more portable
+    symbol: (Value of function)<str>  # Optional, Symbol name use to determine address
+    class_args: ({})<dict>  # Optional dictionary of args to pass to class's
+                       # __init__ method, keys are parameter names
+    registration_args: ({})<dict>  # Optional: Arguments passed to register_handler
+                              # method when adding this method
+    run_once: (false)<bool> # Optional: Set to true if only want intercept to run once
+    watchpoint: (false)<bool> # Optional: Set to true if this is a memory watch point
+
+symbols:  # Optional, dictionary mapping addresses to symbol names, used to
+          # determine addresses for symbol values in intercepts
+  addr0<int>: symbol_name<str>
+  addr1<int>: symbol1_name<str>
+
+options: # Optional, Key:Value pairs you want accessible during emulation
+
+```
+
+The symbols in the config can also be specified using one or more symbols files
+passed in using -s. This is a csv file each line defining a symbol as shown below
+
+```csv
+symbol_name<str>, start_addr<int>, last_addr<int>
+```

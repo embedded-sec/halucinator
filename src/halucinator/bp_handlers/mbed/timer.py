@@ -6,8 +6,7 @@ from time import sleep
 from ..bp_handler import BPHandler, bp_handler
 import struct
 import logging
-log = logging.getLogger("MbedTimer")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class MbedTimer(BPHandler):

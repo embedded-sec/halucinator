@@ -7,18 +7,24 @@ import zmq
 from ..peripheral_models.peripheral_server import encode_zmq_msg, decode_zmq_msg
 from .ioserver import IOServer
 import logging
-log = logging.getLogger("UARTServer")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class UARTPrintServer(object):
+   
     def __init__(self, ioserver):
         self.ioserver = ioserver
+        self.prev_print = None
         ioserver.register_topic(
             'Peripheral.UARTPublisher.write', self.write_handler)
 
     def write_handler(self, ioserver, msg):
-        print(msg, end=' ', flush=True)
+        txt = msg['chars'].decode('latin-1')
+        if self.prev_print == '-> ' and txt == '-> ':
+            return
+        else:
+            self.prev_print = txt
+            print("%s" % txt, end=' ', flush=True)
 
     def send_data(self, id, chars):
         d = {'id': id, 'chars': chars}
@@ -35,11 +41,12 @@ if __name__ == '__main__':
                    help='Port number to send IO messages via zmq')
     p.add_argument('-i', '--id', default=0x20000ab0, type=int,
                    help="Id to use when sending data")
+    p.add_argument('-n', '--newline', default=False, action='store_true',
+                   help="Append Newline")
     args = p.parse_args()
 
-    logging.basicConfig()
-    #log = logging.getLogger()
-    log.setLevel(logging.DEBUG)
+    import halucinator.hal_log as hal_log
+    hal_log.setLogConfig()
 
     io_server = IOServer(args.rx_port, args.tx_port)
     uart = UARTPrintServer(io_server)
@@ -48,8 +55,10 @@ if __name__ == '__main__':
 
     try:
         while(1):
-            data = input("Data:")
+            data = input()
             log.debug("Got %s" % str(data))
+            if args.newline:
+                data +="\n"
             if data == '\\n':
                 data = '\r\n'
             elif data == '':

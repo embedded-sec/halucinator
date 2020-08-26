@@ -13,8 +13,8 @@ import binascii
 import os
 import logging
 import time
-log = logging.getLogger("HLE_Ethernet")
-log.setLevel(logging.INFO)
+log = logging.getLogger(__name__)
+
 
 
 # netif Offsets

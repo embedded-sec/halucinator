@@ -9,21 +9,26 @@ import sys
 from ..bp_handler import BPHandler, bp_handler
 import time
 import logging
-log = logging.getLogger("Timer")
+log = logging.getLogger(__name__)
 # log.setLevel(logging.DEBUG)
 # sys.path.insert(0,path.dirname(path.dirname(path.abspath(__file__))))
 
 
 class Timer(BPHandler):
     '''
-        Returns an increasing value for each addresss accessed
+        Returns an increasing value based of host system time 
+
+        - class: halucinator.bp_handlers.Timer
+          function: <func_name> (Can be anything)
+          registration_args: { scale:(value)} (Optional)
+          addr: <addr>
     '''
 
     def __init__(self):
         self.start_time = {}
         self.scale = {}
 
-    def register_handler(self, addr, func_name, scale=1):
+    def register_handler(self, qemu, addr, func_name, scale=1):
         '''
 
         '''

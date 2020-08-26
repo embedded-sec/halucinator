@@ -12,8 +12,7 @@ import os
 import logging
 from ...peripheral_models.timer_model import TimerModel
 
-log = logging.getLogger("STM32F4Wifi")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 WIFI_OFF = 1
 WIFI_IDLE = 2

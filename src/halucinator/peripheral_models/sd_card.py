@@ -7,8 +7,8 @@ from . import peripheral_server
 from collections import defaultdict
 import os
 import logging
-log = logging.getLogger("SDCardModel")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 # Register the pub/sub calls and methods that need mapped
 # TODO Convert to class that can be instantiated with its parameters

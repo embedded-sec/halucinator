@@ -10,8 +10,8 @@ import struct
 import binascii
 import os
 import logging
-log = logging.getLogger("SD-MMC")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 # sd_mmc_err_t;
 SD_MMC_OK = 0   # No error
@@ -47,7 +47,7 @@ class SDCard(BPHandler):
             self.model.set_config(sd_id, values['filename'],
                                   values['block_size'])
 
-    def register_handler(self, addr, func_name, slots=None):
+    def register_handler(self, qemu, addr, func_name, slots=None):
         '''
             slots(dict): {slot_id: {'capactiy': int (KB), 'block_size': int, 
                                     'write_protected': bool, 'filename': file}}
@@ -57,7 +57,7 @@ class SDCard(BPHandler):
             for sd_id, values in list(slots.items()):
                 self.model.set_config(sd_id, values['filename'],
                                       values['block_size'])
-        return BPHandler.register_handler(self, addr, func_name)
+        return BPHandler.register_handler(self, qemu, addr, func_name)
 
     @bp_handler(['sd_mmc_init'])
     def log_only(self, qemu, bp_addr):

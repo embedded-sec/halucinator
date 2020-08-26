@@ -12,8 +12,8 @@ import binascii
 import os
 import logging
 import time
-log = logging.getLogger("SAMR21-Radio")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 # SPI Addresses
 REG_TRX_STATUS = 0x01

@@ -5,8 +5,7 @@
 from ..bp_handler import BPHandler, bp_handler
 import logging
 import time
-log = logging.getLogger("Contiki")
-# log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class Contiki(BPHandler):
@@ -17,10 +16,10 @@ class Contiki(BPHandler):
         self.start_time = time.time()
         self.ticks_per_second = 128
 
-    def register_handler(self, addr, func_name, ticks_per_second=None):
+    def register_handler(self, qemu, addr, func_name, ticks_per_second=None):
         if ticks_per_second is not None:
             self.ticks_per_second = ticks_per_second
-        return BPHandler.register_handler(self, addr, func_name)
+        return BPHandler.register_handler(self, qemu, addr, func_name)
 
     @bp_handler(['clock_time'])
     def clock_time(self, qemu, bp_addr):

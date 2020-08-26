@@ -1,4 +1,6 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).\n # Under the\n terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights\n # in this software.
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# certain rights in this software.
 
 from ..intercepts import tx_map, rx_map
 from ..bp_handler import BPHandler, bp_handler
@@ -8,8 +10,8 @@ import binascii
 import os
 import logging
 import time
-log = logging.getLogger("I2C_Stub")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 # This is just a stub to enable getting edbg_eui for use as MAC
 # on 6LoWPAN example apps
@@ -22,10 +24,10 @@ class EDBG_Stub(BPHandler):
         self.model = model
         self.eui64 = ''
 
-    def register_handler(self, addr, func_name, eui64=None):
+    def register_handler(self, qemu, addr, func_name, eui64=None):
         if eui64 is not None:
             self.eui64 = eui64
-        return BPHandler.register_handler(self, addr, func_name)
+        return BPHandler.register_handler(self, qemu, addr, func_name)
 
     @bp_handler(['i2c_master_init', 'i2c_master_enable'])
     def return_void(self, qemu, bp_addr):

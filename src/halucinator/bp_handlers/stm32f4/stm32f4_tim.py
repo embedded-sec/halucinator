@@ -12,8 +12,7 @@ from collections import defaultdict
 
 import logging
 
-log = logging.getLogger("STM32F4_TIM")
-log.setLevel(logging.INFO)
+log = logging.getLogger(__name__)
 
 
 class STM32_TIM(BPHandler):

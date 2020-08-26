@@ -2,9 +2,9 @@
 # Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
 # certain rights in this software.
 
-
 import yaml
-from avatar2 import Avatar, QemuTarget, ARM_CORTEX_M3, TargetStates
+from avatar2 import Avatar, QemuTarget, ARM_CORTEX_M3, ARM, TargetStates
+from .qemu_targets import ARMQemuTarget, ARMv7mQemuTarget
 from avatar2.peripherals.avatar_peripheral import AvatarPeripheral
 import logging
 import os
@@ -21,18 +21,17 @@ from .peripheral_models import peripheral_server as periph_server
 from .util.profile_hals import State_Recorder
 from .util import cortex_m_helpers as CM_helpers
 from . import hal_stats
+from . import hal_log, hal_config
+import signal
+log = logging.getLogger(__name__)
+hal_log.setLogConfig()
 
 
-log = logging.getLogger("Halucinator")
-log.setLevel(logging.DEBUG)
-avalog = logging.getLogger("avatar")
-avalog.setLevel(logging.WARN)
-pslog = logging.getLogger("PeripheralServer")
-pslog.setLevel(logging.WARN)
-# log.setLevel(logging.DEBUG)
 
 PATCH_MEMORY_SIZE = 4096
 INTERCEPT_RETURN_INSTR_ADDR = 0x20000000 - PATCH_MEMORY_SIZE
+ARCH_LUT={'cortex-m3': ARM_CORTEX_M3, 'arm': ARM}
+QEMU_ARCH_LUT={'cortex-m3': ARMv7mQemuTarget, 'arm': ARMQemuTarget}
 
 
 def add_patch_memory(avatar, qemu):
@@ -93,186 +92,126 @@ def write_patch_memory(qemu):
 
 
 def find_qemu():
-    default = "../../deps/avatar2/targets/build/qemu/arm-softmmu/qemu-system-arm"
-    real_path = os.path.realpath(os.path.join(
+    '''
+    Tries to find a valid Avatar-QEMU build to use for emulation
+    Will use Environment Variable "HALUCINATOR_QEMU" as first choice
+    then fall back to 
+    <halucinator-root>/deps/avatar2/target/build/qemu/arm-softmmu/qemu-system-arm, 
+    and then <halucinator-root>/deps/avatar2/targets/build/qemu/aarch64-softmmu/qemu-system-aarch64
+        
+    '''
+    default = "../../deps/avatar2/target/build/qemu/arm-softmmu/qemu-system-arm"
+    aarch64 = "../../deps/avatar2/targets/build/qemu/aarch64-softmmu/qemu-system-aarch64"
+    default_path = os.path.realpath(os.path.join(
         os.path.dirname(__file__), default))
-    if not os.path.exists(real_path):
-        print(("ERROR: Could not find qemu in %s did you build it?" % real_path))
-        exit(1)
-    else:
-        print(("Found qemu in %s" % real_path))
-    return real_path
+    aarch64_path = os.path.realpath(os.path.join(
+        os.path.dirname(__file__), aarch64))
+
+    if os.environ.get("HALUCINATOR_QEMU") is not None:
+        if not os.path.exists(os.environ.get("HALUCINATOR_QEMU")):
+            log.error('Path of "$HALUCINATOR_QEMU" is invalid"')
+            exit(1)
+        return os.environ.get("HALUCINATOR_QEMU")
+
+    if os.path.exists(default_path):
+        return default_path
+    elif os.path.exists(aarch64_path):
+        return aarch64_path
+    log.error("QEMU NOT FOUND.\n Set environment variable $HALUCINATOR_QEMU to  full path of avatar-qemu binary")
+    exit(1)
 
 
-#  Add Interrupt support to QemuTarget, will eventually be in Avatar
-#  So until then just hack in a patch like this
-def trigger_interrupt(qemu, interrupt_number, cpu_number=0):
-    qemu.protocols.monitor.execute_command(
-        'avatar-armv7m-inject-irq',
-        {'num_irq': interrupt_number, 'num_cpu': cpu_number})
-
-
-def set_vector_table_base(qemu, base, cpu_number=0):
-    qemu.protocols.monitor.execute_command(
-        'avatar-armv7m-set-vector-table-base',
-        {'base': base, 'num_cpu': cpu_number})
-
-
-def enable_interrupt(qemu, interrupt_number, cpu_number=0):
-    qemu.protocols.monitor.execute_command(
-        'avatar-armv7m-enable-irq',
-        {'num_irq': interrupt_number, 'num_cpu': cpu_number})
-
-
-QemuTarget.trigger_interrupt = trigger_interrupt
-QemuTarget.set_vector_table_base = set_vector_table_base
-# --------------------------END QemuTarget Hack --------------------------------
-
-
-def get_qemu_target(name, entry_addr, firmware=None, log_basic_blocks=False,
-                    output_base_dir='', gdb_port=1234):
+def get_qemu_target(name, config, firmware=None, log_basic_blocks=False, gdb_port=1234):
     qemu_path = find_qemu()
-    outdir = os.path.join(output_base_dir, 'tmp', name)
+    outdir = os.path.join('tmp', name)
     hal_stats.set_filename(outdir+"/stats.yaml")
-    avatar = Avatar(arch=ARM_CORTEX_M3, output_directory=outdir)
-    print(("GDB_PORT", gdb_port))
-    log.critical("Using qemu in %s" % qemu_path)
-    qemu = avatar.add_target(QemuTarget,
-                             gdb_executable="gdb-multiarch",
+    
+    # Get info from config
+    arch = ARCH_LUT[config.machine.arch]
+    
+    avatar = Avatar(arch=arch, output_directory=outdir)
+    log.info("GDB_PORT: %s"% gdb_port)
+    log.info("QEMU Path: %s" % qemu_path)
+
+    qemu_target = QEMU_ARCH_LUT[config.machine.arch]
+    qemu = avatar.add_target(qemu_target,
+                             cpu_model=config.machine.cpu_model,
+                             gdb_executable=config.machine.gdb_exe,
                              gdb_port=gdb_port,
                              qmp_port=gdb_port+1,
                              firmware=firmware,
                              executable=qemu_path,
-                             entry_address=entry_addr, name=name)
-    # qemu.log.setLevel(logging.DEBUG)
+                             entry_address=config.machine.entry_addr, name=name)
 
     if log_basic_blocks == 'irq':
         qemu.additional_args = ['-d', 'in_asm,exec,int,cpu,guest_errors,avatar,trace:nvic*', '-D',
                                 os.path.join(outdir, 'qemu_asm.log')]
+    elif log_basic_blocks == 'regs':
+        qemu.additional_args = ['-d', 'in_asm,exec,cpu', '-D',
+                                os.path.join(outdir, 'qemu_asm.log')]
+    elif log_basic_blocks == 'exec':
+        qemu.additional_args = ['-d', 'exec', '-D',
+                                os.path.join(outdir, 'qemu_asm.log')]
+    elif log_basic_blocks == 'trace-nochain':
+        qemu.additional_args = ['-d', 'in_asm,exec,nochain', '-D',
+                                os.path.join(outdir, 'qemu_asm.log')]
+    elif log_basic_blocks == 'trace':
+        qemu.additional_args = ['-d', 'in_asm,exec', '-D',
+                                os.path.join(outdir, 'qemu_asm.log')]
+
     elif log_basic_blocks:
         qemu.additional_args = ['-d', 'in_asm', '-D',
                                 os.path.join(outdir, 'qemu_asm.log')]
     return avatar, qemu
 
 
-def setup_peripheral(avatar, name, per, base_dir=None):
-    '''
-        Just a memory, but will usually have an emulate field. 
-        May not when just want to treat peripheral as a memory
-    '''
-    setup_memory(avatar, name, per, base_dir)
-
-
-def get_memory_filename(memory, base_dir):
-    '''
-    Gets the filename for the memory to load into memory
-    Args:
-        memory(dict): Dict from yaml config file for memory 
-                          requires keys [base_addr, size] 
-                          optional keys [emulate (a memory emulator), 
-                          perimissions, filename]
-
-    '''
-    filename = memory['file'] if 'file' in memory else None
-    if filename != None:
-        if base_dir != None and not os.path.isabs(filename):
-            filename = os.path.join(base_dir, filename)
-    return filename
-
-
-def setup_memory(avatar, name, memory, base_dir=None, record_memories=None):
+def setup_memory(avatar, memory, record_memories=None):
     '''
         Sets up memory regions for the emualted devices
         Args:
             avatar(Avatar):
             name(str):    Name for the memory
-            memory(dict): Dict from yaml config file for memory 
-                          requires keys [base_addr, size] 
-                          optional keys [emulate (a memory emulator), 
-                          perimissions, filename]
-            returns:
-                permission
+            memory(HALMemoryConfigdict): 
     '''
-
-    filename = get_memory_filename(memory, base_dir)
-
-    permissions = memory['permissions'] if 'permissions' in memory else 'rwx'
-    # if 'model' in memory:
-    #     emulate = getattr(peripheral_emulators, memory['emulate'])
-    # #TODO, just move this to models/bp_handlers but don't want break
-    # all configs right now
-    if 'emulate' in memory:
-        emulate = getattr(peripheral_emulators, memory['emulate'])
+    if memory.emulate is not None:
+        emulate = getattr(peripheral_emulators, memory.emulate)
     else:
         emulate = None
     log.info("Adding Memory: %s Addr: 0x%08x Size: 0x%08x" %
-             (name, memory['base_addr'], memory['size']))
-    avatar.add_memory_range(memory['base_addr'], memory['size'],
-                            name=name, file=filename,
-                            permissions=permissions, emulate=emulate)
+             (memory.name, memory.base_addr, memory.size))
+    avatar.add_memory_range(memory.base_addr, memory.size,
+                            name=memory.name, file=memory.file,
+                            permissions=memory.permissions, emulate=emulate)
 
     if record_memories is not None:
-        if 'w' in permissions:
-            record_memories.append((memory['base_addr'], memory['size']))
+        if 'w' in memory.permissions:
+            record_memories.append((memory.base_addr, memory.size))
 
 
-def get_entry_and_init_sp(config, base_dir):
-    '''
-    Gets the entry point and the initial SP.
-    This is a work around because AVATAR-QEMU does not init Cortex-M3
-    correctly. 
-
-    Works by identifying the init_memory, and reading the reset vector from
-    the file loaded into it memory.
-    Args:
-        config(dict):   Dictionary of config file(yaml)
-    avatar.add_memory_range(0xB000_00000, memory['size'], 
-                            name=name, file=filename, 
-                            permissions=permissions, emulate=emulate)
-    avatar.add_memory_range(0xB000_00000, memory['size'], 
-                            name=name, file=filename, 
-                            permissions=permissions, emulate=emulate)ion
-    avatar.add_memory_range(0xB000_00000, memory['size'], 
-                            name=name, file=filename, 
-                            permissions=permissions, emulate=emulate)ointer
-    avatar.add_memory_range(0xB000_00000, memory['size'], 
-                            name=name, file=filename, 
-                            permissions=permissions, emulate=emulate)
-    '''
-
-    init_memory = config['init_memory'] if 'init_memory' in config else 'flash'
-    init_filename = get_memory_filename(
-        config['memories'][init_memory], base_dir)
-
-    init_sp, entry_addr, = CM_helpers.get_sp_and_entry(init_filename)
-    return init_sp, entry_addr
-
-
-def emulate_binary(config, base_dir, target_name=None, log_basic_blocks=None,
+def emulate_binary(config, target_name=None, log_basic_blocks=None,
                    rx_port=5555, tx_port=5556, gdb_port=1234, elf_file=None, db_name=None):
 
-    init_sp, entry_addr = get_entry_and_init_sp(config, base_dir)
-    periph_server.base_dir = base_dir
-    log.info("Entry Addr: 0x%08x,  Init_SP 0x%08x" % (entry_addr, init_sp))
+    # Bug in QEMU about init stack pointer/entry point this works around
+    if config.machine.arch == 'cortex-m3':
+        mem = config.memories['init_mem'] if 'init_mem' in config.memories else config.memories['flash']
+        if mem is not None and mem.file is not None:
+            config.machine.init_sp, entry_addr = CM_helpers.get_sp_and_entry(mem.file)
+        # Only use the discoved entry point if one not explicitly set
+        if config.machine.entry_addr is None:
+            config.machine.entry_addr = entry_addr
 
-    avatar, qemu = get_qemu_target(target_name, entry_addr,
+    avatar, qemu = get_qemu_target(target_name, config,
                                    log_basic_blocks=log_basic_blocks,
-                                   output_base_dir=base_dir, gdb_port=gdb_port)
+                                   gdb_port=gdb_port)
 
-    if 'options' in config:
-        log.info("Config file has options")
-        if 'remove_bitband' in config['options'] and \
-                config['options']['remove_bitband']:
-            log.info("Removing Bitband")
-            qemu.remove_bitband = True
+    if 'remove_bitband' in config.options and config.options['remove_bitband']:
+        log.info("Removing Bitband")
+        qemu.remove_bitband = True
 
     # Setup Memory Regions
     record_memories = []
-    for name, memory in list(config['memories'].items()):
-        setup_memory(avatar, name, memory, base_dir, record_memories)
-
-    # Add memory needed for returns
-    add_patch_memory(avatar, qemu)
+    for memory in config.memories.values():
+        setup_memory(avatar, memory, record_memories)
 
     # Add recorder to avatar
     # Used for debugging peripherals
@@ -285,14 +224,8 @@ def emulate_binary(config, base_dir, target_name=None, log_basic_blocks=None,
     else:
         avatar.recorder = None
 
-    # Setup Peripherals Regions
-    for name, per in list(config['peripherals'].items()):
-        # They are just memories
-        setup_peripheral(avatar, name, per, base_dir)
-
-    # Setup Intercept MMIO Regions
     added_classes = []
-    for intercept in config['intercepts']:
+    for intercept in config.intercepts:
         bp_cls = intercepts.get_bp_handler(intercept)
         if issubclass(bp_cls.__class__, AvatarPeripheral):
             name, addr, size, per = bp_cls.get_mmio_info()
@@ -305,25 +238,39 @@ def emulate_binary(config, base_dir, target_name=None, log_basic_blocks=None,
    # Setup Intecepts
     avatar.watchmen.add_watchman('BreakpointHit', 'before',
                                  intercepts.interceptor, is_async=True)
+    avatar.watchmen.add_watchman('WatchpointHit', 'before',
+                                 intercepts.interceptor, is_async=True)
     qemu.gdb_port = gdb_port
-
-    avatar.callables = config['callables']
+    avatar.config = config
+    log.info("Initializing Avatar Targets")
     avatar.init_targets()
 
-    for intercept in config['intercepts']:
-        intercepts.register_bp_handler(qemu, intercept)
+    for intercept in config.intercepts:
+        if intercept.bp_addr is not None:
+            log.info("Registering Intercept: %s" % intercept)
+            intercepts.register_bp_handler(qemu, intercept)
+
 
     # Work around Avatar-QEMU's improper init of Cortex-M3
-    qemu.regs.cpsr |= 0x20  # Make sure the thumb bit is set
-    qemu.regs.sp = init_sp  # Set SP as Qemu doesn't init correctly
-    # TODO Change to be read from config
-    qemu.set_vector_table_base(0x08000000)
-    write_patch_memory(qemu)
+    if config.machine.arch == 'cortex-m3':
+        qemu.regs.cpsr |= 0x20  # Make sure the thumb bit is set
+        qemu.regs.sp = config.machine.init_sp  # Set SP as Qemu doesn't init correctly
+        qemu.set_vector_table_base(config.machine.vector_base)
+    
 
     # Emulate the Binary
     periph_server.start(rx_port, tx_port, qemu)
     # import os; os.system('stty sane') # Make so display works
     # import IPython; IPython.embed()
+
+    def signal_handler(signal, frame):
+        print('You pressed Ctrl+C!')
+        avatar.stop()
+        avatar.shutdown()
+        periph_server.stop()
+        sys.exit(0)
+    signal.signal(signal.SIGINT, signal_handler)
+    log.info("Letting QEMU Run")
     qemu.cont()
 
     try:
@@ -340,53 +287,18 @@ def emulate_binary(config, base_dir, target_name=None, log_basic_blocks=None,
         quit(-1)
 
 
-def override_addresses(config, address_file):
-    '''
-        Replaces address in config with address from the address_file with same
-        function name
-    '''
-    with open(address_file, 'rb') as infile:
-        addr_config = yaml.load(infile, Loader=yaml.FullLoader)
-        addr2func_lut = addr_config['symbols']
-        func2addr_lut = {}
-        for key, val in list(addr2func_lut.items()):
-            func2addr_lut[val] = key
-        base_addr = addr_config['base_address']
-        entry_addr = addr_config['entry_point']
-
-    remove_ids = []
-    for intercept in config['intercepts']:
-        f_name = intercept['function']
-        # Update address if in address list
-        if f_name in func2addr_lut:
-            intercept['addr'] = (func2addr_lut[f_name] &
-                                 0xFFFFFFFE)  # clear thumb bit
-            log.info("Replacing address for %s with %s " %
-                     (f_name, hex(func2addr_lut[f_name])))
-        elif 'addr' not in intercept:
-            remove_ids.append((intercept, f_name))
-
-    config['callables'] = func2addr_lut
-
-    for (intercept, f_name) in remove_ids:
-        log.info("Removing Intercept for: %s" % f_name)
-        config['intercepts'].remove(intercept)
-
-    return base_addr, entry_addr
-
-
 def main():
     from argparse import ArgumentParser
     p = ArgumentParser()
-    p.add_argument('-c', '--config', required=True,
-                   help='Config file used to run emulation')
-    p.add_argument('-m', '--memory_config', required=False, default=None,
-                   help='Memory Config, will overwrite config in --config if present if memories not in -c this is required')
-    p.add_argument('-a', '--address', required=False,
-                   help='Yaml file of function addresses, providing it over' +
-                   'rides addresses in config file for functions')
+    p.add_argument('-c', '--config', action='append', required=True,
+                   help='Config file(s) used to run emulation files are essentially'\
+                   'appended to each other with later files taking precidence')
+    # p.add_argument('-m', '--memory_config', required=False, default=None,
+    #                help='Memory Config, will overwrite config in --config if present if memories not in -c this is required')
+    p.add_argument('-s', '--symbols', action='append', default=[], 
+                    help='CSV file with each row having symbol, first_addr, last_addr')
     p.add_argument('--log_blocks', default=False, const=True, nargs='?',
-                   help="Enables QEMU's logging of basic blocks, options [irq]")
+                   help="Enables QEMU's logging of basic blocks, options [irq,regs]")
     p.add_argument('-n', '--name', default='HALucinator',
                    help='Name of target for avatar, used for logging')
     p.add_argument('-r', '--rx_port', default=5555, type=int,
@@ -400,33 +312,21 @@ def main():
 
     args = p.parse_args()
 
-    logging.basicConfig()
-    log = logging.getLogger()
-    # log.setLevel(logging.INFO)
-    with open(args.config, 'rb') as infile:
-        config = yaml.load(infile, Loader=yaml.FullLoader)
+    # Build configuration
+    config = hal_config.HalucinatorConfig()
+    for conf_file in args.config:
+        log.info("Parsing config file: %s" %conf_file)
+        config.add_yaml(conf_file)
 
-    if args.address is not None:
-        override_addresses(config, args.address)
+    for csv_file in args.symbols:
+        log.info("Parsing csv symbol file: %s" %csv_file)
+        config.add_csv_symbols(csv_file)
 
-    if 'memories' not in config and args.memory_config == None:
-        print("Memory Configuration must be in config file or provided using -m")
-        p.print_usage()
-        quit(-1)
+    if not config.prepare_and_validate():
+        log.error("Config invalid")
+        exit(-1)
 
-    if args.memory_config:
-        # Use memory configuration from mem_config
-        base_dir = os.path.split(args.memory_config)[0]
-        with open(args.memory_config, 'rb') as infile:
-            mem_config = yaml.load(infile, Loader=yaml.FullLoader)
-            if 'options' in mem_config:
-                config['options'] = mem_config['options']
-            config['memories'] = mem_config['memories']
-            config['peripherals'] = mem_config['peripherals']
-    else:
-        base_dir = os.path.split(args.config)[0]
-
-    emulate_binary(config, base_dir, args.name, args.log_blocks,
+    emulate_binary(config, args.name, args.log_blocks,
                    args.rx_port, args.tx_port,
                    elf_file=args.elf, gdb_port=args.gdb_port)
 

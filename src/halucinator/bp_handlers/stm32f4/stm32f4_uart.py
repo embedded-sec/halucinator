@@ -6,8 +6,10 @@ from os import sys, path
 from ...peripheral_models.uart import UARTPublisher
 from ..bp_handler import BPHandler, bp_handler
 import logging
-log = logging.getLogger("STM32F4UART")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
+from ... import hal_log
+hal_log = hal_log.getHalLogger()
 
 
 class STM32F4UART(BPHandler):
@@ -31,12 +33,13 @@ class STM32F4UART(BPHandler):
             Reads the frame out of the emulated device, returns it and an 
             id for the interface(id used if there are multiple ethernet devices)
         '''
+        print("UART TX called")
         huart = qemu.regs.r0
         hw_addr = qemu.read_memory(huart, 4, 1)
         buf_addr = qemu.regs.r1
         buf_len = qemu.regs.r2
         data = qemu.read_memory(buf_addr, 1, buf_len, raw=True)
-        log.info("Writing: %s" % data)
+        hal_log.info("UART TX:%s" % data)
         self.model.write(hw_addr, data)
         return True, 0
 
@@ -50,7 +53,7 @@ class STM32F4UART(BPHandler):
         size = qemu.regs.r2
         log.info("Waiting for data: %i" % size)
         data = self.model.read(hw_addr, size, block=True)
-        log.info("Got Data: %s" % data)
+        hal_log.info("UART RX: %s" % data)
 
         qemu.write_memory(qemu.regs.r1, 1, data, size, raw=True)
         return True, 0

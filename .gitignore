@@ -7,3 +7,6 @@ __pycache__
 *.egg-info
 
 src/build/
+*.pyc
+deps/**
+test/**/tmp

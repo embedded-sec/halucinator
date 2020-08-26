@@ -10,8 +10,8 @@ import time
 from collections import defaultdict
 
 import logging
-log = logging.getLogger("Timers")
-# log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 
 class Timers(BPHandler, AvatarPeripheral):
@@ -55,13 +55,13 @@ class Timers(BPHandler, AvatarPeripheral):
                  (self.address + offset, size, value, hex(pc)))
         return True
 
-    def register_handler(self, addr, func_name, irq_rates=None):
+    def register_handler(self, qemu, addr, func_name, irq_rates=None):
         '''
             irq_rate(dict): {Name: rate (in seconds)}
         '''
         if irq_rates is not None:
             self.irq_rates = irq_rates
-        return BPHandler.register_handler(self, addr, func_name)
+        return BPHandler.register_handler(self, qemu, addr, func_name)
 
     @bp_handler(['tc_init'])
     def enable(self, qemu, bp_addr):

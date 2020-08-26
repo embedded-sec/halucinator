@@ -4,7 +4,7 @@
 
 import networkx as nx
 import os
-
+from collections import defaultdict
 
 BLOCK_DELIMITER = '\n'
 BLOCK_KEY = 1
@@ -16,11 +16,18 @@ class Block(object):
     def __init__(self, block_str, sym_lut=None):
         self.block_str = block_str
         self.name = self.parse_name(block_str)
-        self.addr = int(self.name, 16)
+        try:
+            self.addr = int(self.name, 16)
+        except ValueError:
+            self.addr = -1
+            
         self.function = 'None'
         if sym_lut != None:
             if self.addr in sym_lut:
-                self.function = sym_lut[self.addr].name
+                try:
+                    self.function = sym_lut[self.addr].name
+                except AttributeError:
+                    self.function = sym_lut[self.addr]
         self.__get_id()
 
     def __get_id(self):
@@ -46,6 +53,7 @@ class Start_Block(Block):
         self.block_str = None
         self.name = 'Start'
         self.id = 'Start'
+        self.function = "$Start"
 
 
 class Stop_Block(Block):
@@ -53,9 +61,27 @@ class Stop_Block(Block):
         self.block_str = None
         self.name = 'Stop'
         self.id = 'Stop'
+        self.function = "$Stop"
 
 
-def create_graph(filename, binary=None, export_named=None):
+def build_lut_from_addr_file(addr_file):
+    sym_lut = {}
+
+    import csv
+    with open(addr_file) as infile:
+        csv_reader = csv.reader(infile, delimiter=',')
+        for row in csv_reader:
+            try:
+                start_addr = int(row[1],16)
+                stop_addr = int(row[2],16)
+                for addr in range(start_addr, stop_addr, 2):
+                    sym_lut[addr] = row[0]
+            except ValueError:
+                pass
+    return sym_lut
+
+
+def create_graph(filename, addr_file=None, binary=None, export_named=None):
     '''
     Creates a two graphs that can be visulized with gephi,
     The first (*.graphml) has a only one node per block, and thus shows loops 
@@ -68,7 +94,9 @@ def create_graph(filename, binary=None, export_named=None):
     '''
 
     sym_lut = None
-    if binary != None:
+    if addr_file != None:
+        sym_lut = build_lut_from_addr_file(addr_file)
+    elif binary != None:
         from elf_sym_hal_getter import build_addr_to_sym_lookup
         sym_lut = build_addr_to_sym_lookup(binary)
 
@@ -79,7 +107,7 @@ def create_graph(filename, binary=None, export_named=None):
     with open(filename, 'rt') as infile:
         prev_block = Start_Block()
         block_str = []
-        if export_named is not None and binary is not None:
+        if export_named is not None:
             export_file = open(export_named, 'wt')
         else:
             export_file = 0
@@ -105,7 +133,9 @@ def create_graph(filename, binary=None, export_named=None):
                 block_str = []
                 if export_file:
                     l = line.strip('\n')
+                    
                     export_file.write("%s %s\n" % (l, block.function))
+                    print("0x%08x: %s"%(block.addr, block.function))
             else:
                 if export_file:
                     export_file.write(line)
@@ -135,11 +165,13 @@ if __name__ == '__main__':
     p.add_argument('-b', '--bin', required=False, default=None,
                    help=('Elf file to get symbols from. If provided will' +
                          ' attempt to map addresses to function names'))
+    p.add_argument('-a','--address_file',
+                    help='Address file for symbols') #Currently csv, change to yaml format used for halucinator
     p.add_argument('-c', '--csv', required=False, default=None,
                    help='CSV File to write blocks to')
 
     args = p.parse_args()
-    blocks = create_graph(args.file, args.bin, args.named)
+    blocks = create_graph(args.file, args.address_file, args.bin, args.named)
     if args.csv is not None:
         write_block_file(blocks, args.csv)
-    print(len(blocks))
+    print("Num unique BB Exec: %i" %len(blocks))

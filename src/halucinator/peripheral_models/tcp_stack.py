@@ -12,8 +12,7 @@ import logging
 import time
 from threading import Thread, Event
 import socket
-log = logging.getLogger("TCPModel")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 # @peripheral_server.peripheral_model  # Register the pub/sub calls and methods that need mapped
 

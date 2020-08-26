@@ -7,8 +7,8 @@ import yaml
 from functools import wraps
 from multiprocessing import Process
 import logging
-log = logging.getLogger("PeripheralServer")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 __rx_handlers__ = {}
 __rx_context__ = zmq.Context()
@@ -21,7 +21,6 @@ __process = None
 __qemu = None
 
 output_directory = None
-base_dir = None
 
 
 def peripheral_model(cls):
@@ -76,7 +75,7 @@ def encode_zmq_msg(topic, msg):
 
 
 def decode_zmq_msg(msg):
-    topic, encoded_msg = msg.split(' ', 1)
+    topic, encoded_msg = str(msg).split(' ', 1)
     decoded_msg = yaml.safe_load(encoded_msg)
     return (topic, decoded_msg)
 
@@ -118,6 +117,19 @@ def trigger_interrupt(num):
     __qemu.trigger_interrupt(num)
 
 
+def irq_set(irq_num=1, cpu=0):
+    global __qemu
+    __qemu.irq_set(irq_num, cpu)
+
+def irq_clear(self, irq_num=1, cpu=0):
+    global __qemu
+    __qemu.irq_clear(irq_num, cpu)
+
+def irq_pulse(self, irq_num=1, cpu=0):
+    global __qemu
+    __qemu.irq_pulse(irq_num, cpu)
+
+
 def run_server():
     global __rx_handlers__
     global __rx_socket__
@@ -130,7 +142,7 @@ def run_server():
     poller = zmq.Poller()
     poller.register(__rx_socket__, zmq.POLLIN)
     while(not __stop_server):
-        socks = dict(poller.poll(1000))
+        socks = dict(poller.poll(500))
         if __rx_socket__ in socks and socks[__rx_socket__] == zmq.POLLIN:
             string = __rx_socket__.recv_string()
             topic, msg = decode_zmq_msg(string)
@@ -155,8 +167,8 @@ def run_server():
     log.info("Peripheral Server Shutdown Normally")
 
 
-def stop(self):
+def stop():
     global __process
     global __stop_server
     __stop_server = True
-    __process.join()
+    # __process.join()

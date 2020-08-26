@@ -12,8 +12,8 @@ import binascii
 import os
 import logging
 import time
-log = logging.getLogger("Ksz8851Eth")
-log.setLevel(logging.INFO)
+log = logging.getLogger(__name__)
+
 
 # SPI Addresses
 REG_RX_FHR_BYTE_CNT = 0x7E

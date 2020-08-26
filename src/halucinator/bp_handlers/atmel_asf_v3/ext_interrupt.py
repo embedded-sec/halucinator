@@ -7,8 +7,8 @@ from avatar2.peripherals.avatar_peripheral import AvatarPeripheral
 from ..intercepts import tx_map, rx_map
 from ..bp_handler import BPHandler, bp_handler
 import logging
-log = logging.getLogger("EXT_Int")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 
 class EXT_Int(BPHandler, AvatarPeripheral):
@@ -52,12 +52,12 @@ class EXT_Int(BPHandler, AvatarPeripheral):
                     self.model.clear_active(isr_name)
         return True
 
-    def register_handler(self, addr, func_name, channel_map=None):
+    def register_handler(self, qemu, addr, func_name, channel_map=None):
         # Can be called for each function registered with the class
         if channel_map is not None:
             log.info("Setting Channel map: %s" % str(channel_map))
             self.channel_map = channel_map
-        return BPHandler.register_handler(self, addr, func_name)
+        return BPHandler.register_handler(self, qemu, addr, func_name)
 
     # @bp_handler(['EIC_Handler'])
     # def EIC_Handler(self, qemu, bp_addr):

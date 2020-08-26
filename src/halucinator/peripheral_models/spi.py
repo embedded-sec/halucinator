@@ -12,9 +12,7 @@ import logging
 from itertools import repeat
 import time
 
-log = logging.getLogger("SPIModel")
-log.setLevel(logging.DEBUG)
-
+log = logging.getLogger(__name__)
 
 class UARTModel(object):
 

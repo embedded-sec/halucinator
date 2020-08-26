@@ -10,11 +10,15 @@ from ..util import hexyaml
 import os
 import logging
 from .. import hal_stats as hal_stats
-log = logging.getLogger("Intercepts")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
+from .. import hal_log as hal_log_conf
+hal_log = hal_log_conf.getHalLogger()
+
 
 
 hal_stats.stats['used_intercepts'] = set()
+hal_stats.stats['bypassed_funcs'] = set()
 
 
 def tx_map(per_model_funct):
@@ -32,8 +36,8 @@ def tx_map(per_model_funct):
     def intercept_decorator(func):
         print("In: intercept_decorator", func)
         @wraps(func)
-        def intercept_wrapper(self, qemu, bp_addr):
-            bypass, ret_value, msg = func(self, qemu, bp_addr)
+        def intercept_wrapper(self, target, bp_addr):
+            bypass, ret_value, msg = func(self, target, bp_addr)
             log.debug("Values:", msg)
             per_model_funct(*msg)
             return bypass, ret_value
@@ -56,43 +60,24 @@ def rx_map(per_model_funct):
     def intercept_decorator(func):
         print("In: intercept_decorator", func)
         @wraps(func)
-        def intercept_wrapper(self, qemu, bp_addr):
+        def intercept_wrapper(self, target, bp_addr):
             models_inputs = per_model_funct()
-            return func(self, qemu, bp_addr, *models_inputs)
+            return func(self, target, bp_addr, *models_inputs)
         return intercept_wrapper
     return intercept_decorator
-
-
-def bp_return(qemu, bypass, ret_value):
-    '''
-        Handles returning from breakpoint for ARMv7-M devices
-        Args:
-            bypass(bool):  If true bypasses execution of the function
-            ret_value(bool): The return value to provide for the execution
-    '''
-    print("Intercept Return: ", (bypass, ret_value))
-    return
-    if ret_value != None:
-        # Puts ret value in r0
-        qemu.regs.r0 = ret_value
-    if bypass:
-        # Returns from function, by putting LR in PC
-        qemu.regs.pc = qemu.regs.lr
-        #log.info("Executing BX LR")
-        # qemu.exec_bxlr()
-
 
 initalized_classes = {}
 bp2handler_lut = {}
 
-
-def get_bp_handler(intercept_desc):
+def get_bp_handler(intercept):
     '''
         gets the bp_handler class from the config file class name.
         Instantiates it if has not been instantiated before if 
         has it just returns the instantiated instance
+
+        :param intercept: HALInterceptConfig
     '''
-    split_str = intercept_desc['class'].split('.')
+    split_str = intercept.cls.split('.')
 
     module_str = ".".join(split_str[:-1])
     class_str = split_str[-1]
@@ -102,40 +87,74 @@ def get_bp_handler(intercept_desc):
     if cls_obj in initalized_classes:
         bp_class = initalized_classes[cls_obj]
     else:
-        if 'class_args' in intercept_desc and intercept_desc['class_args'] != None:
-            print('Class:', cls_obj)
-            print('Class Args:', intercept_desc['class_args'])
-            bp_class = cls_obj(**intercept_desc['class_args'])
+        if intercept.class_args != None:
+            log.info('Class:', cls_obj)
+            log.info('Class Args:', intercept.class_args)
+            bp_class = cls_obj(**intercept.class_args)
         else:
             bp_class = cls_obj()
         initalized_classes[cls_obj] = bp_class
     return bp_class
 
 
-def register_bp_handler(qemu, intercept_desc):
+def register_bp_handler(qemu, intercept):
     '''
-    '''
+        Registers a BP handler for specific address
 
-    bp_cls = get_bp_handler(intercept_desc)
-    if isinstance(intercept_desc['addr'], int):
-        # Clear thumb bit
-        intercept_desc['addr'] = intercept_desc['addr'] & 0xFFFFFFFE
-    if 'registration_args' in intercept_desc and \
-       intercept_desc['registration_args'] != None:
-        handler = bp_cls.register_handler(intercept_desc['addr'],
-                                          intercept_desc['function'],
-                                          **intercept_desc['registration_args'])
+        :param qemu:    Avatar qemu target
+        :param intercept: HALInterceptConfig
+    '''
+    if intercept.bp_addr is None:
+        log.debug("No address specified for %s ignoring intercept" % intercept)
+        return
+    bp_cls = get_bp_handler(intercept)
+
+    try:
+        if intercept.registration_args != None:
+            log.info("Registering BP Handler: %s.%s : %s, registration_args: %s" % (
+                intercept.cls, intercept.function, hex(intercept.bp_addr),
+                str(intercept.registration_args)))
+            handler = bp_cls.register_handler(qemu,
+                                            intercept.bp_addr,
+                                            intercept.function,
+                                            **intercept.registration_args)
+        else:
+            log.info("Registering BP Handler: %s.%s : %s" % (
+                intercept.cls, intercept.function, hex(intercept.bp_addr)))
+            handler = bp_cls.register_handler(qemu,
+                                            intercept.bp_addr,
+                                            intercept.function)
+    except ValueError as e:
+        hal_log.error("Invalid BP registration failed for %s" %(intercept))
+        hal_log.error("Input registration args are %s" %(intercept.registration_args))
+        exit(-1)
+
+    if intercept.run_once:
+        bp_temp = True
+        log.debug("Setting as Tempory")
     else:
-        handler = bp_cls.register_handler(intercept_desc['addr'],
-                                          intercept_desc['function'])
-    log.info("Registering BP Handler: %s.%s : %s" % (
-        intercept_desc['class'], intercept_desc['function'], hex(intercept_desc['addr'])))
-    bp = qemu.set_breakpoint(intercept_desc['addr'])
-    hal_stats.stats[bp] = dict(intercept_desc)
-    hal_stats.stats[bp]['count'] = 0
-    hal_stats.stats[bp]['method'] = handler.__name__
+        bp_temp = False
+        
+    if intercept.watchpoint:
+        if intercept.watchpoint == "r":
+             bp = qemu.set_watchpoint(intercept.bp_addr, write=False, read=True)
+        elif intercept_desc['watchpoint'] == "w":
+            bp = qemu.set_watchpoint(intercept.bp_addr, write=True, read=False)
+            
+        else:
+            bp = qemu.set_watchpoint(intercept.bp_addr, write=True, read=True)
+
+    else:
+        bp = qemu.set_breakpoint(intercept.bp_addr, temporary=bp_temp)
+
+
+    hal_stats.stats[bp] = {'function': intercept.function, 
+                           'desc': str(intercept), 
+                           'count': 0, 
+                           'method': handler.__name__}
 
     bp2handler_lut[bp] = (bp_cls, handler)
+    log.info("BP is %i" % bp)
 
 
 def interceptor(avatar, message):
@@ -143,9 +162,14 @@ def interceptor(avatar, message):
         Callback for Avatar2 break point watchman.  It then dispatches to
         correct handler
     '''
-    bp = int(message.breakpoint_number)
-    qemu = message.origin
-    pc = qemu.regs.pc & 0xFFFFFFFE  # Clear Thumb bit
+    #HERE
+    if message.__class__.__name__ == "WatchpointHitMessage":
+        bp = int(message.watchpoint_number)
+    else:
+        bp = int(message.breakpoint_number)
+    target = message.origin
+    pc = target.regs.pc & 0xFFFFFFFE  # Clear Thumb bit
+
 
     cls, method = bp2handler_lut[bp]
     hal_stats.stats[bp]['count'] += 1
@@ -154,14 +178,12 @@ def interceptor(avatar, message):
 
     # print method
     try:
-        intercept, ret_value = method(cls, qemu, pc)
+        intercept, ret_value = method(cls, target, pc)
+        if intercept:
+            hal_stats.write_on_update('bypassed_funcs', hal_stats.stats[bp]['function'])
     except:
         log.exception("Error executing handler %s" % (repr(method)))
         raise
     if intercept:
-        if ret_value != None:
-            # Puts ret value in r0
-            qemu.regs.r0 = ret_value
-        qemu.regs.pc = qemu.regs.lr
-        # qemu.exec_return(ret_value)
-    qemu.cont()
+        target.execute_return(ret_value)
+    target.cont()

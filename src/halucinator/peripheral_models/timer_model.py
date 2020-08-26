@@ -8,8 +8,8 @@ from .interrupts import Interrupts
 from threading import Thread, Event
 import logging
 import time
-log = logging.getLogger("TimerModel")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
 
 
 # Register the pub/sub calls and methods that need mapped

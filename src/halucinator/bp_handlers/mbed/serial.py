@@ -3,11 +3,9 @@
 # certain rights in this software.
 
 from ...peripheral_models.uart import UARTPublisher
-from ...peripheral_models.uart import HostStdio
 from ..bp_handler import BPHandler, bp_handler
 import logging
-log = logging.getLogger("MbedUART")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class MbedUART(BPHandler):

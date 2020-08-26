@@ -11,8 +11,7 @@ import struct
 import binascii
 import os
 import logging
-log = logging.getLogger("STM32F4Ethernet")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class STM32F4Ethernet(BPHandler):

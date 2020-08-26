@@ -9,7 +9,7 @@ from ..peripheral_models.peripheral_server import encode_zmq_msg, decode_zmq_msg
 from .ioserver import IOServer
 import logging
 
-log = logging.getLogger("UARTServer")
+log = logging.getLogger(__main__)
 log.setLevel(logging.DEBUG)
 
 
@@ -41,9 +41,8 @@ if __name__ == '__main__':
                    help="Id to use when sending data")
     args = p.parse_args()
 
-    logging.basicConfig()
-    # log = logging.getLogger()
-    log.setLevel(logging.DEBUG)
+    import halucinator.hal_log as hal_log
+    hal_log.setLogConfig()
 
     io_server = IOServer(args.rx_port, args.tx_port)
     uart = UARTPrintServer(io_server)

@@ -8,8 +8,7 @@ from .trigger_interrupt import SendInterrupt
 import logging
 import time
 import socket
-log = logging.getLogger("ViruatalEthHub")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class IEEE802_15_4(object):
@@ -58,9 +57,8 @@ if __name__ == '__main__':
         p.print_usage()
         quit(-1)
 
-    logging.basicConfig()
-    #log = logging.getLogger()
-    log.setLevel(logging.DEBUG)
+    import halucinator.hal_log as hal_log
+    hal_log.setLogConfig()
 
     hub = IEEE802_15_4()
 

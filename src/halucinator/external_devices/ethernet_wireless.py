@@ -8,8 +8,7 @@ from .ethernet_virt_hub import ViruatalEthHub, HostEthernetServer
 
 import logging
 import time
-log = logging.getLogger("Ethernet and Wireless Hub")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':
@@ -31,9 +30,8 @@ if __name__ == '__main__':
         p.print_usage()
         quit(-1)
 
-    logging.basicConfig()
-    #log = logging.getLogger()
-    log.setLevel(logging.DEBUG)
+    import halucinator.hal_log as hal_log
+    hal_log.setLogConfig()
 
     ethernet_hub = ViruatalEthHub()
 

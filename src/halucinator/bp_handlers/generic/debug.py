@@ -3,16 +3,96 @@
 # certain rights in this software.
 from os import path, system
 from ..bp_handler import BPHandler, bp_handler
+from ..intercepts import register_bp_handler
 import IPython
 import logging
-log = logging.getLogger("Debugging")
-log.setLevel(logging.DEBUG)
+log = logging.getLogger(__name__)
+
+# class IPythonShell(BPHandler):
+#     '''
+#         Drops into an IPythonShell for the breakpoint handler
+
+#         - class: halucinator.bp_handlers.IPythonShell
+#           function: <func_name> (Can be anything)
+#           addr: <addr>
+#     '''
+
+#     def __init__(self):
+#         self.addr2name = {}
+
+#     def register_handler(self, qemu, addr, func_name):
+#         self.addr2name[addr] = func_name
+#         return IPythonShell.get_value
+
+#     @bp_handler
+#     def get_value(self, target, addr):
+#         '''
+#             Gets the counter value
+#         '''
+
+#         log.warning("In Debug: %s" % self.addr2name[addr])
+#         print("Execute self.print_help for options")
+#         # qemu.write_bx_lr(qemu.regs.pc)
+#         ret_val = None
+#         self.print_helpers()
+#         system('stty sane')  # Make so display works
+#         IPython.embed()
+
+#         # return intercept, ret_val
+#         return False, ret_val
+
+#     def print_helpers(self):
+#         print("Available Debug Helpers:")
+#         print("    CortexMDebugHelper(target)")
+
+
+
+
+
+class IPythonShell(BPHandler):
+    '''
+        Drops into an IPythonShell for the breakpoint handler
+
+        - class: halucinator.bp_handlers.IPythonShell
+          function: <func_name> (Can be anything)
+          addr: <addr>
+    '''
+
+    def __init__(self):
+        self.addr2name = {}
+
+    def register_handler(self, qemu, addr, func_name):
+        self.addr2name[addr] = func_name
+        return IPythonShell.get_value
+
+    @bp_handler
+    def get_value(self, target, addr):
+        '''
+            Gets the counter value
+        '''
+
+        log.warning("In Debug: %s" % self.addr2name[addr])
+        print("Execute self.print_helpers for options")
+        # qemu.write_bx_lr(qemu.regs.pc)
+        ret_val = None
+        self.print_helpers()
+        system('stty sane')  # Make so display works
+        print("In function: %s" % (self.addr2name[addr]))
+        print("You can look up a symbol using target.avatar.config.get_symbol_name(addr)")
+        IPython.embed()
+
+        # return intercept, ret_val
+        return False, ret_val
+
+    def print_helpers(self):
+        print("Available Debug Helpers:")
+        print("    CortexMDebugHelper(target)")
+
 
 BFAR = 0xE000ED38
 MMAR = 0xE000ED34
 
-
-class DebugHelper():
+class CortexMDebugHelper():
     def __init__(self, qemu):
         self.qemu = qemu
 
@@ -122,33 +202,3 @@ class DebugHelper():
         if hardfault & (1 << 1):
             print("Bus Fault")
         print("Stacked PC 0x%x" % (self.get_stacked_pc(sp_offset)))
-
-
-class IPythonShell(BPHandler):
-    '''
-        Returns an increasing value for each addresss accessed
-    '''
-
-    def __init__(self):
-        self.addr2name = {}
-
-    def register_handler(self, addr, func_name):
-        self.addr2name[addr] = func_name
-        return IPythonShell.get_value
-
-    @bp_handler
-    def get_value(self, qemu, addr):
-        '''
-            Gets the counter value
-        '''
-
-        log.warning("In Debug: %s" % self.addr2name[addr])
-        qemu.write_bx_lr(qemu.regs.pc)
-        intercept = False
-        ret_val = None
-        d = DebugHelper(qemu)
-        system('stty sane')  # Make so display works
-        IPython.embed()
-
-        # return intercept, ret_val
-        return False, ret_val
