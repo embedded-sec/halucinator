@@ -41,7 +41,7 @@ class IEEE802_15_4(object):
             server.shutdown()
 
 
-if __name__ == '__main__':
+def main():
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('-r', '--rx_ports', nargs='+', default=[5556, 5558],
@@ -80,3 +80,7 @@ if __name__ == '__main__':
     log.info("Shutting Down")
     hub.shutdown()
     # io_server.join()
+
+
+if __name__ == '__main__':
+    main()

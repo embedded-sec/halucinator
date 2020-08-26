@@ -219,8 +219,9 @@ def emulate_binary(config, target_name=None, log_basic_blocks=None,
         if db_name is None:
             db_name = ".".join((os.path.splitext(elf_file)[
                                0], str(target_name), "sqlite"))
+        
         avatar.recorder = State_Recorder(
-            db_name, qemu, record_memories, elf_file)
+             db_name, qemu, record_memories, elf_file)
     else:
         avatar.recorder = None
 
@@ -238,8 +239,16 @@ def emulate_binary(config, target_name=None, log_basic_blocks=None,
    # Setup Intecepts
     avatar.watchmen.add_watchman('BreakpointHit', 'before',
                                  intercepts.interceptor, is_async=True)
-    avatar.watchmen.add_watchman('WatchpointHit', 'before',
+    # Avatar may not support WatchPoints
+    try:
+        avatar.watchmen.add_watchman('WatchpointHit', 'before',
                                  intercepts.interceptor, is_async=True)
+    except Exception as e:  #Avatar should really raise some specific types
+        if e.args[0] == 'Requested event_type does not exist':
+            log.warning("Watchpoints not supported")
+        else:
+            raise e
+
     qemu.gdb_port = gdb_port
     avatar.config = config
     log.info("Initializing Avatar Targets")

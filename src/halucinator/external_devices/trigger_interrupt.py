@@ -25,8 +25,7 @@ class SendInterrupt(object):
         data = {'base': base_addr}
         self.ioserver.send_msg(topic, data)
 
-
-if __name__ == '__main__':
+def main():
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('-i', '--interrupt', type=int,
@@ -43,7 +42,7 @@ if __name__ == '__main__':
 
     if args.interrupt is None and args.base_addr is None:
         print("Either -i or -b required")
-        print(p.usage())
+        p.print_usage()
 
     io_server = IOServer(args.rx_port, args.tx_port)
     interrupter = SendInterrupt(io_server)
@@ -57,3 +56,7 @@ if __name__ == '__main__':
         else:
             base = int(args.base_addr)
         interrupter.set_vector_base(base)
+
+
+if __name__ == '__main__':
+    main()

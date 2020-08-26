@@ -1,28 +1,56 @@
 # HALucinator - Firmware rehosting through abstraction layer modeling.
 
-
 ## Setup
 
 Note:  This has been lightly tested on Ubuntu 16.04, and 18.04
 
-1.  Install dependencies and create the `halucinator` virtual environment using the
-`create_venv.sh` script.
-2. Activate the virtual environment: `source ~/.virtualenv/halucinator/bin/activate`
-3. Run `setup.sh` script in the root directory. This will install dependencies, get avatar and build the needed version of qemu. 
+1.  Install dependencies using `./install_deps.sh`
+2.  Create and activate a python3 virtual environment (I use virtualmachine 
+    wrapper but you can do this however you like)
+    ```
+       mkvirtualenv -p `which python3` halucinator
+    ```
+    if (halucinator) is not in your prompt use workon halucinator
+3.  Install Halucinator 
+    ```
+    pip install -r src/requirements.txt
+    pip install -e src
+    ```
+4. Install Avatar's QEMU and GDB (Select avatar-qemu and gdb-arm)
+```
+python -m avatar2.installer
+```
+5. Set environmental variable for HALUCINATOR_QEMU
+  ```
+    export HALUCINATOR_QEMU=`readlink -f ~/.avatar2/avatar-qemu/arm-softmmu/qemu-system-arm`
+  ```
+
+Note on setting `HALUCINATOR_QEMU` if you use virtualenvwrapper as above you 
+can set it up to be automatically set and removed when activating/deactivating
+the virtual environment using the postactivate and predeactivate scripts.
+  
+Contents of $VIRTUAL_ENV/bin/postactivate
+```
+export HALUCINATOR_QEMU=<full path to your qemu>
+```
+
+Contents of $VIRTUAL_ENV/bin/predeactivate
+```
+unset HALUCINATOR_QEMU
+```
 
 ## Running
 
 Running Halucinator requires a configuration file that lists the functions to 
-intercept and the handler to be called on that interception. It also requires
-an address file linking addresses to function names, and a memory file that 
-describes the memory layout of the system being emulated.  The firmware file is 
-specified in the memory file.
-
-Examples of these files are given in the test directoy.
+intercept and the handler to be called on that interception. I usually split 
+this config across three files for portability.  The files are a memory file that
+describes the memory layout, an intercept file that describes what to intercept
+and a symbol/address file that maps addresses to symbol names.  See the Config 
+File section below for full details
 
 ```
 workon halucinator
-./halucinator -c=<config_file.yaml> -a=<address_file.yaml> -m=<memory_file.yaml>
+./halucinator  -c=<memory_file.yaml> -c=<intercept_file.yaml> -c=<address_file.yaml>
 ```
 
 ## Running an Example
@@ -72,19 +100,17 @@ In list below after the colon (:) denotes the file/cmd .
 6. Create Config File (defines functions to intercept and what handler to use for it): `Uart_Hyperterminal_IT_O0_config.yaml`
 7. (Optional) create shell script to run it: `run.sh`
 
-Note: the Memory file can be created using `src/halucinator/util/elf_sym_hal_getter.py` 
-from an elf with symbols.  This requires installing angr in halucinator's virtual environment.
+Note: Symbols used int address file can be created from and elf file with symbols
+using `hal_make_addrs` This requires installing angr in halucinator's virtual environment.
 This was used to create `Uart_Hyperterminal_IT_O0_addrs.yaml`
 
-To use it the first time you would. Install angr
-```
-source ~/.virtualenvs/halucinator/bin/activate
-pip install angr
-```
+To use it the first time you would. Install angr (e.g. `pip install angr` from
+the halucinator virtual environment)
+
 
 Then run it as a module in halucinator
 ```
-python -m halucinator.util.elf_sym_hal_getter -b <path to elf file>
+hal_make_addrs -b <path to elf file>
 ```
 
 
@@ -95,7 +121,7 @@ enable interacting with it.
 
 ```bash
 workon halucinator
-<halucinator_repo_root>$python -m halucinator.external_devices.uart -i=1073811456
+hal_dev_uart -i=1073811456
 
 ```
 
@@ -103,12 +129,13 @@ In separate terminal start halucinator with the firmware.
 
 ```bash
 workon halucinator
-<halucinator_repo_root>$./halucinator -c=test/STM32/example/Uart_Hyperterminal_IT_O0_config.yaml \
+
+<halucinator_repo_root>$ halucinator -c=test/STM32/example/Uart_Hyperterminal_IT_O0_config.yaml \
   -c=test/STM32/example/Uart_Hyperterminal_IT_O0_addrs.yaml \
   -c=test/STM32/example/Uart_Hyperterminal_IT_O0_memory.yaml --log_blocks -n Uart_Example
 
 or
-<halucinator_repo_root>$test/STM32/example/run.sh 
+<halucinator_repo_root>& test/STM32/example/run.sh 
 ```
 Note the --log_blocks and -n are optional.
 
@@ -133,15 +160,15 @@ INFO:STM32F4UART:Writing:
 
 #### Stopping
 
-Avatar creates many threads and std input gets sent to QEMU thus killing it is not trivial. 
-I usually have to kill it with `ctrl-z` and `kill %`, or `killall -9 halucinator`
+Press `ctrl-c`. Ff for some reason this doesn't work kill it with `ctrl-z` 
+and `kill %`, or `killall -9 halucinator`
 
 Logs are kept in the `tmp/<value of -n option>`. e.g `tmp/Uart_Example/`
 
 ## Config file
 
 How the emulation is performed is controlled by a yaml config file.  It is passed 
-in using a the -c flag, which can be repeated with the config file being appended
+in using the -c flag, which can be repeated with the config files being appended
 and the later files overwriting any collisions from previous file.  The config 
 is specified as follows.  Default field values are in () and types are in <>
 
@@ -168,22 +195,26 @@ memories:  #List of the memories to add to the machine
                       # path relative to this config file, blank memory used if not specified
     emulate: class<AvatarPeripheral subclass>    # Class to emulate memory 
 
-peripherals:  # Optional, A list of memories, except emulate field required
+peripherals:  # Optional, A list of memories, same as memories except emulate field required
 
-intercepts:  # Optional, list of intercepts to places
+intercepts:  # Optional, list of intercepts to place
   - class:  <BPHandler subclass>,  # Required use full import path
     function: <str>     # Required: Function name in @bp_handler([]) used to
                         #   determine class method used to handle this intercept
+    symbol: (Value of function)<str>  # Optional, Symbol name use to determine 
+                                      # address in firmware to intercept, name 
+                                      # must be present in symbols,
+                                      # If not use value of function is used
     addr: (from symbols)<int>  # Optional, Address of where to place this intercept,
                                # generally recommend not setting this value, but
                                # instead setting symbol and adding entry to
-                               # symbols for this makes config files more portable
-    symbol: (Value of function)<str>  # Optional, Symbol name use to determine address
+                               # symbols (in seperate file) as this makes config 
+                               # files more portable. If set will take precidence over symbol
     class_args: ({})<dict>  # Optional dictionary of args to pass to class's
                        # __init__ method, keys are parameter names
     registration_args: ({})<dict>  # Optional: Arguments passed to register_handler
-                              # method when adding this method
-    run_once: (false)<bool> # Optional: Set to true if only want intercept to run once
+                                   # method when adding this method
+    run_once: (false)<bool>   # Optional: Set to true if only want intercept to run once
     watchpoint: (false)<bool> # Optional: Set to true if this is a memory watch point
 
 symbols:  # Optional, dictionary mapping addresses to symbol names, used to

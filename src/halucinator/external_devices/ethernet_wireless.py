@@ -11,7 +11,7 @@ import time
 log = logging.getLogger(__name__)
 
 
-if __name__ == '__main__':
+def main():
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('-r', '--rx_ports', nargs='+', default=[5556, 5558],
@@ -64,3 +64,6 @@ if __name__ == '__main__':
     log.info("Shutting Down")
     ethernet_hub.shutdown()
     wireless_hub.shutdown()
+
+if __name__ == '__main__':
+    main()

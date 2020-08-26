@@ -24,17 +24,23 @@ def get_packages(rel_dir):
 
 
 setup(name='halucinator',
-      version='1.0a',
-      description='Emulation and rehosting framework',
+      version='1.0.5',
+      description='Firmware emulation and rehosting framework',
       author='Abe Clements and Eric Gustafson',
-      author_email='',
-      # url='https://seclab.cs.ucsb.edu',
       packages=get_packages('halucinator'),
       entry_points ={'console_scripts': [
             'halucinator = halucinator.main:main',
-            'qemulog2trace= tools.qemu_to_trace:main',
+            'qemulog2trace = tools.qemu_to_trace:main',
+            'hal_make_addr= halucinator.util.elf_sym_hal_getter:main',
+            'hal_dev_uart=halucinator.external_devices.uart:main',
+            'hal_dev_virt_hub=halucinator.external_devices.ethernet_virt_hub:main',
+            'hal_dev_eth_wireless=halucinator.external_devices.ethernet_wireless:main',
+            'hal_dev_host_eth=halucinator.external_devices.host_ethernet:main',
+            'hal_dev_host_eth_server=halucinator.external_devices.host_ethernet_server:main',
+            'hal_dev_802_15_4=halucinator.external_devices.IEEE802_15_4:main',
+            'hal_dev_irq_trigger=halucinator.external_devices.trigger_interrupt:main'
         ]},
-      requires=['avatar2',
+      requires=['avatar2',    
                 'zeromq',
                 'PyYAML',
-                'IPython', ])
+                'IPython' ])

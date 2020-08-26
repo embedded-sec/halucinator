@@ -29,7 +29,7 @@ class VN8200XP(Thread):
         self.ioserver.send_msg('Peripheral.UARTPublisher.rx_data', d)
 
 
-if __name__ == '__main__':
+def main():
     from argparse import ArgumentParser
 
     p = ArgumentParser()
@@ -64,3 +64,6 @@ if __name__ == '__main__':
     log.info("Shutting Down")
     io_server.shutdown()
     # io_server.join()
+
+if __name__ == '__main__':
+    main()

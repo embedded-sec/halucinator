@@ -89,7 +89,8 @@ def start(interface, emu_rx_port=5556, emu_tx_port=5555, msg_id=1073905664):
     emu_tx_process.join()
 
 
-if __name__ == '__main__':
+
+def main():
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('-r', '--rx_port', default=5556,
@@ -102,3 +103,7 @@ if __name__ == '__main__':
                    help='Ethernet Interace to listen to')
     args = p.parse_args()
     start(args.interface, args.rx_port, args.tx_port, args.id)
+
+
+if __name__ == '__main__':
+    main()

@@ -86,7 +86,7 @@ class ViruatalEthHub(object):
             server.shutdown()
 
 
-if __name__ == '__main__':
+def main():
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('-r', '--rx_ports', nargs='+', default=[5556, 5558],
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                    help='Port numbers to send IO messages via zmq, lenght must match --rx_ports')
     p.add_argument('-i', '--interface', required=False, default=None,
                    help='Ethernet Interace to echo data on')
-    p.add_argument('-h', '--enable_host_rx', required=False, default=False,
+    p.add_argument('-p', '--enable_host_rx', required=False, default=False,
                    action='store_true',
                    help='Enable Recieving data from host interface, requires -i')
     args = p.parse_args()
@@ -138,3 +138,6 @@ if __name__ == '__main__':
     log.info("Shutting Down")
     hub.shutdown()
     # io_server.join()
+
+if __name__ == '__main__':
+    main()

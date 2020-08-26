@@ -68,7 +68,8 @@ def format_output(functions, base_addr=0x00000000, entry=0):
     return out_dict
 
 
-if __name__ == '__main__':
+
+def main():
     '''
     Gets Symbols from elf file using the symbols table in the elf
     '''
@@ -88,3 +89,8 @@ if __name__ == '__main__':
     with open(args.out, 'w') as outfile:
         out_dict = format_output(functions)
         yaml.safe_dump(out_dict, outfile)
+
+
+
+if __name__ == '__main__':
+    main()
