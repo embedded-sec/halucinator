@@ -1,32 +1,36 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
+# Copyright 2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
 # Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
 # certain rights in this software.
 
 
-import zmq
-from ..peripheral_models.peripheral_server import encode_zmq_msg, decode_zmq_msg
-from .ioserver import IOServer
+from halucinator.external_devices.ioserver import IOServer
+from halucinator.external_devices.uart import UARTPrintServer
 import logging
 log = logging.getLogger(__name__)
 
-
-class UARTPrintServer(object):
+#  This is our extenal device calass that is going
+# to handle LEDs
+class LEDDevice(object):
    
     def __init__(self, ioserver):
         self.ioserver = ioserver
-        self.prev_print = None
-        ioserver.register_topic(
-            'Peripheral.UARTPublisher.write', self.write_handler)
+        # STEP 1 
+        # Notice saving the ioserver (above) and registing for the topic
+        # There is a typo in topic class name that makes it so this
+        # won't receive messages from your peripheral model.
+        # It needs to match your peripheral_model class name 
+        topic = 'Peripheral.XXX_Model.led_status'
+
+        log.debug("Registering for topic %s" % topic)
+        ioserver.register_topic(topic, self.write_handler)
 
     def write_handler(self, ioserver, msg):
-        txt = msg['chars'].decode('latin-1')
-        self.prev_print = txt
-        print("%s" % txt, end=' ', flush=True)
-
-    def send_data(self, id, chars):
-        d = {'id': id, 'chars': chars}
-        log.debug("Sending Message %s" % (str(d)))
-        self.ioserver.send_msg('Peripheral.UARTPublisher.rx_data', d)
+        log.debug("Got status %s" % str(msg))
+        # STEP 2
+        # You will msg will be a dict like {'id': LED_ID, 'status':<boolean>}
+        # Use print so message always shows up with format like
+        # "LED: %s is %s" % (led_id, state) where state is 'On' or 'Off'
+        
 
 
 def main():
@@ -48,6 +52,9 @@ def main():
     io_server = IOServer(args.rx_port, args.tx_port)
     uart = UARTPrintServer(io_server)
 
+    # STEP 3
+    # Instantiate your LEDDevice class and as led and pass io_server to its initializer
+    led = LEDDevice(io_server)
     io_server.start()
 
     try:
@@ -66,7 +73,6 @@ def main():
         pass
     log.info("Shutting Down")
     io_server.shutdown()
-    # io_server.join()
 
 
 if __name__ == '__main__':

@@ -300,14 +300,14 @@ def main():
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('-c', '--config', action='append', required=True,
-                   help='Config file(s) used to run emulation files are essentially'\
+                   help='Config file(s) used to run emulation files are '\
                    'appended to each other with later files taking precidence')
     # p.add_argument('-m', '--memory_config', required=False, default=None,
     #                help='Memory Config, will overwrite config in --config if present if memories not in -c this is required')
     p.add_argument('-s', '--symbols', action='append', default=[], 
                     help='CSV file with each row having symbol, first_addr, last_addr')
     p.add_argument('--log_blocks', default=False, const=True, nargs='?',
-                   help="Enables QEMU's logging of basic blocks, options [irq,regs]")
+                   help="Enables QEMU's logging of basic blocks, options [irq, regs, exec, trace, trace-nochain]")
     p.add_argument('-n', '--name', default='HALucinator',
                    help='Name of target for avatar, used for logging')
     p.add_argument('-r', '--rx_port', default=5555, type=int,

@@ -1,83 +1,80 @@
 intercepts:
 
-# - class: halucinator.bp_handlers.SkipFunc 
-#   function: BSP_IO_WritePin
-# - class: halucinator.bp_handlers.ReturnConstant
-#   registration_args: {ret_value: 1}
-#   function: BSP_SD_IsDetected
-
 - class: halucinator.bp_handlers.IPythonShell 
   function: HardFault_Handler
+  symbol: HardFault_Handler
 
-- class: halucinator.bp_handlers.IPythonShell
-  addr: 0x0800_2384
-  function: Infinite_fault
+# - class: halucinator.bp_handlers.IPythonShell
+#   addr: 0x0800_2384
+#   function: Infinite_fault
 
 
 # -------------------------------UART ----------------------------------------
 - class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART 
   function: HAL_UART_Init
+  symbol: HAL_UART_Init
 - class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART 
   function: HAL_UART_GetState
+  symbol: HAL_UART_GetState
 - class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
   function: HAL_UART_Transmit
+  symbol: HAL_UART_Transmit
 - class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
   function: HAL_UART_Transmit_IT
+  symbol: HAL_UART_Transmit_IT
 - class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
   function: HAL_UART_Transmit_DMA
+  symbol: HAL_UART_Transmit_DMA
 - class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
   function: HAL_UART_Receive
+  symbol: HAL_UART_Receive
 - class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
   function: HAL_UART_Receive_IT
+  symbol: HAL_UART_Receive_IT
 - class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
   function: HAL_UART_Receive_DMA
+  symbol: HAL_UART_Receive_DMA
 # ----------------------------------------------------------------------------
 
 # -------------------------------Generic ------------------------------------
 
 - class: halucinator.bp_handlers.SkipFunc
   function: HAL_Delay
+  symbol: HAL_Delay
 - class: halucinator.bp_handlers.generic.timer.Timer
   function: HAL_GetTick
+  symbol: HAL_GetTick
 - class: halucinator.bp_handlers.ReturnZero 
   function: HAL_Init
+  symbol: HAL_Init
 - class: halucinator.bp_handlers.ReturnZero
   function: HAL_InitTick
+  symbol: HAL_InitTick
 - class: halucinator.bp_handlers.Counter 
   function: HAL_IncTick
+  symbol: HAL_IncTick
 - class: halucinator.bp_handlers.ReturnZero 
   function: HAL_MspInit
+  symbol: HAL_MspInit
 
-# - class: halucinator.bp_handlers.ReturnZero
-#   function: HAL_I2C_DeInit
-# - class: halucinator.bp_handlers.ReturnZero
-#   function: HAL_I2C_Init
-# - class: halucinator.bp_handlers.ReturnZero
-#   function: HAL_I2C_GetState
-# - class: halucinator.bp_handlers.ReturnZero
-#   function: HAL_I2C_Mem_Read
-# - class: halucinator.bp_handlers.ReturnZero
-#   function: HAL_I2C_Mem_Write
-# - class: halucinator.bp_handlers.ReturnZero
-#   function: HAL_I2C_MspDeInit
-# - class: halucinator.bp_handlers.ArgumentLogger
-#   registration_args: {num_args: 1}
-#   function: HAL_I2C_MspInit
 - class: halucinator.bp_handlers.ReturnZero 
   function: HAL_RCC_ClockConfig
-- class: halucinator.bp_handlers.ReturnZero 
-  function: HAL_RCC_GetHCLKFreq
-- class: halucinator.bp_handlers.ReturnZero 
-  function: HAL_RCC_GetPCLK1Freq
-- class: halucinator.bp_handlers.ReturnZero 
-  function: HAL_RCC_GetSysClockFreq
+  symbol: HAL_RCC_ClockConfig
+# - class: halucinator.bp_handlers.ReturnZero 
+#   function: HAL_RCC_GetHCLKFreq
+# - class: halucinator.bp_handlers.ReturnZero 
+#   function: HAL_RCC_GetPCLK1Freq
+# - class: halucinator.bp_handlers.ReturnZero 
+#   function: HAL_RCC_GetSysClockFreq
 - class: halucinator.bp_handlers.ReturnZero 
   function: HAL_RCC_OscConfig
-- class: halucinator.bp_handlers.ReturnZero 
-  function: HAL_SYSTICK_Config
+  symbol: HAL_RCC_OscConfig
+# - class: halucinator.bp_handlers.ReturnZero 
+#   function: HAL_SYSTICK_Config
 - class: halucinator.bp_handlers.ReturnZero 
   function: HAL_PWREx_EnableOverDrive
-- class: halucinator.bp_handlers.ReturnZero 
-  function: BSP_IO_Init
-- class: halucinator.bp_handlers.ReturnZero 
-  function: BSP_IO_ConfigPin
+  symbol: HAL_PWREx_EnableOverDrive
+# - class: halucinator.bp_handlers.ReturnZero 
+#   function: BSP_IO_Init
+# - class: halucinator.bp_handlers.ReturnZero 
+#   function: BSP_IO_ConfigPin

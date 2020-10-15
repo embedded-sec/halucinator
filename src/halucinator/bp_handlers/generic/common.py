@@ -58,7 +58,7 @@ class ReturnConstant(BPHandler):
     @bp_handler
     def return_constant(self, qemu, addr):
         '''
-            Intercept Execution and return 0
+            Intercept Execution and return constant
         '''
         if not self.silent[addr]:
             hal_log.info("ReturnConstant: %s : %#x" %(self.func_names[addr], self.ret_values[addr]))
