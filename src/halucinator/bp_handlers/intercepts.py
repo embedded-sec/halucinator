@@ -88,8 +88,8 @@ def get_bp_handler(intercept):
         bp_class = initalized_classes[cls_obj]
     else:
         if intercept.class_args != None:
-            log.info('Class:', cls_obj)
-            log.info('Class Args:', intercept.class_args)
+            log.info('Class: %s' % cls_obj)
+            log.info('Class Args: %s' % intercept.class_args)
             bp_class = cls_obj(**intercept.class_args)
         else:
             bp_class = cls_obj()

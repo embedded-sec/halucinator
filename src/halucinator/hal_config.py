@@ -331,18 +331,23 @@ class HalucinatorConfig(object):
         bp_addrs = {}
         del_inters = []
         for inter in self.intercepts:
-            if not inter.is_valid():
-                hal_log.error("Config: %s" % mem)
-                valid = False
+            # Fix up break point addresses for cortex-m3
+            if self.machine.arch == 'cortex-m3' and inter.watchpoint == False and inter.bp_addr is not None:
+                inter.bp_addr &= 0xFFFFFFFE  # Clear thumb bit so BP is on right address
+
+            if inter.is_valid():
+                # Check for duplicates
                 if inter.bp_addr in bp_addrs:
-                    hal_log.warning("Duplicate Intercept:\n\tOld: %s\n\tNew: %s" % \
-                        (bp_addrs[inter.bp_addr][1], inter))
-                    del_inters = bp_addrs[inter.bp_addr]
+                    hal_log.warning("Duplicate Intercept:\n\tOld: %s\n\tNew: %s" % (bp_addrs[inter.bp_addr], inter))
+                    del_inters.append(bp_addrs[inter.bp_addr])
+                    
                 bp_addrs[inter.bp_addr] = inter
             else:
-                if self.machine.arch == 'cortex-m3' and inter.watchpoint == False and inter.bp_addr is not None:
-                    inter.bp_addr &= 0xFFFFFFFE  # Clear thumb bit so BP is on right address
+                hal_log.error("Config: %s" % mem)
+                valid = False
+            
 
+        # Remove duplicate intercepts
         for inter in del_inters:
             self.intercepts.remove(inter)
 

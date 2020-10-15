@@ -1,0 +1,32 @@
+intercepts:
+
+- class: hal_tutorial.bp_handlers.led_bp_handler.LEDHandler
+  # STEP 1a
+  # Uncomment the class_args, this will pass map_dict to the constructor
+  # for this class and use nice strings for our LED names instead of numbers
+  # class_args: {map_dict: {0: GREEN, 1: ORANGE, 2: RED, 3: BLUE}}
+  function: My_BSP_LED_Init
+  symbol: BSP_LED_Init
+
+- class: hal_tutorial.bp_handlers.led_bp_handler.LEDHandler
+  # STEP 1b
+  # Uncomment the class_args, this will pass map_dict to the constructor
+  # for this class and use nice strings for our LED names instead of numbers
+  # class_args: {map_dict: {0: GREEN, 1: ORANGE, 2: RED, 3: BLUE}}
+  function: My_BSP_LED_Off
+  symbol: BSP_LED_Off
+
+# Step 2
+# Using BSP_LED_Off as a template, add the intercept for BSP_LED_On
+# The name to map this to the bp_handler method is My_BSP_LED_On
+
+
+# NOTE:
+# We are going to make HAL_UART_Receive_IT appear to fail by returning -1
+# Comment out below to restore normal receive functionality
+- class: halucinator.bp_handlers.ReturnConstant 
+  registration_args: {ret_value: -1}
+  function: HAL_UART_Receive_IT
+  symbol: HAL_UART_Receive_IT
+
+

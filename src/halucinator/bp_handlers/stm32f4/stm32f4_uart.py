@@ -33,13 +33,12 @@ class STM32F4UART(BPHandler):
             Reads the frame out of the emulated device, returns it and an 
             id for the interface(id used if there are multiple ethernet devices)
         '''
-        print("UART TX called")
-        huart = qemu.regs.r0
+        huart = qemu.get_arg(0)
         hw_addr = qemu.read_memory(huart, 4, 1)
-        buf_addr = qemu.regs.r1
-        buf_len = qemu.regs.r2
+        buf_addr = qemu.get_arg(1)
+        buf_len = qemu.get_arg(2)
         data = qemu.read_memory(buf_addr, 1, buf_len, raw=True)
-        hal_log.info("UART TX:%s" % data)
+        hal_log.info("UART %i TX:%s" % (hw_addr, data))
         self.model.write(hw_addr, data)
         return True, 0
 
@@ -48,12 +47,12 @@ class STM32F4UART(BPHandler):
     # HAL_StatusTypeDef HAL_UART_Receive_DMA(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
     @bp_handler(['HAL_UART_Receive', 'HAL_UART_Receive_IT', 'HAL_UART_Receive_DMA'])
     def handle_rx(self, qemu, bp_handler):
-        huart = qemu.regs.r0
+        huart = qemu.get_arg(0)
         hw_addr = qemu.read_memory(huart, 4, 1)
-        size = qemu.regs.r2
+        size = qemu.get_arg(2)
         log.info("Waiting for data: %i" % size)
         data = self.model.read(hw_addr, size, block=True)
-        hal_log.info("UART RX: %s" % data)
+        hal_log.info("UART %i RX: %s" % (hw_addr, data))
 
-        qemu.write_memory(qemu.regs.r1, 1, data, size, raw=True)
+        qemu.write_memory(qemu.get_arg(1), 1, data, size, raw=True)
         return True, 0

@@ -5,26 +5,53 @@
 Note:  This has been lightly tested on Ubuntu 16.04, and 18.04
 
 1.  Install dependencies using `./install_deps.sh`
-2.  Create and activate a python3 virtual environment (I use virtualmachine 
+
+1.  Create and activate a python3 virtual environment (I use virtualmachine 
     wrapper but you can do this however you like)
     ```
        mkvirtualenv -p `which python3` halucinator
     ```
     If (halucinator) is not in your prompt use `workon halucinator`
-3.  Install Halucinator 
+
+    Note: On ubuntu 18.04 you may have to manually configure virtualenvwrapper. Or build you virtual environment using you preferred method
+    ```bash
+        pip3 install virtualenvwrapper
+    ```
+    Then add to `~/.bashrc` using your favorite editor and then run
+    `source ~/.bashrc`.  Replace `your username` in below
+    
+    ```bash
+    export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
+    export WORKON_HOME=$HOME/.virtualenvs
+    export VIRTUALENVWRAPPER_VIRTUALENV=/home/<your username>/.local/bin/virtualenv
+    source ~/.local/bin/virtualenvwrapper.sh
+    ```
+
+1.  Install Halucinator 
+    Make sure you are in you virtual environment and then run
     ```
     pip install -r src/requirements.txt
     pip install -e src
     ```
-4. Install Avatar's QEMU and GDB (Select avatar-qemu and gdb-arm)
+1. Install Avatar's QEMU and GDB (Select avatar-qemu and gdb-arm)
    ```
    python -m avatar2.installer
    ```
-   This step will take a while the first time
-5. Set environmental variable for HALUCINATOR_QEMU
+   This step will take a while the first time, and you may have to make your terminal wider
+
+1. Set environmental variable for HALUCINATOR_QEMU
   ```
     export HALUCINATOR_QEMU=`readlink -f ~/.avatar2/avatar-qemu/arm-softmmu/qemu-system-arm`
   ```
+
+1.  Simlink gdb-multiarch to arm-none-eabi-gdb
+    If you don't have arm-none-eabi-gdb on your path you can apt get it on Ubuntu 16.04.  On Ubuntu 18.04 you can use gdb-multiarch
+    which was installed in step 1.  Just symlink it to `arm-none-eabi-gdb`
+
+    ```bash
+    sudo ln /usr/bin/gdb-multiarch /usr/bin/arm-none-eabi-gdb
+    ```
+    
 ### Note on setting HALUCINATOR_QEMU
 
 If you use virtualenvwrapper as above you 
