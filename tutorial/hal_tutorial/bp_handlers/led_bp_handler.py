@@ -56,7 +56,7 @@ class LEDHandler(BPHandler):
         # STEP 3.
         # Use target's get_arg method to get the LED arg 0 the function.
         # Then use self.get_id to convert it an id and
-        # call self.model.on(led_id) to set the LED to on in the peripheral model
+        # call self.model.off(led_id) to set the LED to off in the peripheral model
         
         return True, None  # Return type is void
 
