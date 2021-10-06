@@ -1,5 +1,7 @@
 # HALucinator - Firmware rehosting through abstraction layer modeling.
 
+NOTE: For a more recent version of HALucinator see https://github.com/halucinator
+
 ## Setup
 
 Note:  This has been lightly tested on Ubuntu 16.04, and 18.04
