@@ -72,6 +72,43 @@ Contents of $VIRTUAL_ENV/bin/predeactivate
 unset HALUCINATOR_QEMU
 ```
 
+## Building with Docker
+A Dockerfile which builds an image with all the required dependencies
+for Halucinator is present. 
+It can be found in the `docker/` folder.
+
+Inside the `docker/` folder are two files:
+
+* The `Dockerfile` that builds the image
+* A `Makefile` for convenience
+
+To build the image navigate to the `docker/` directory and run `make`:
+```
+$ cd path/to/Halucinator/docker/
+$ make
+```
+
+This will build the docker image locally.
+View the available images with:
+```
+$ docker image ls
+```
+
+To start a long running container with an interactive `/bin/bash` session, run:
+```
+$ make run
+```
+
+To connect to an existing, long running container, run:
+```
+$ make bash
+```
+
+To delete the container and local image crated, run:
+```
+$ make clean
+```
+
 ## Running
 
 Running Halucinator requires a configuration file that lists the functions to 
